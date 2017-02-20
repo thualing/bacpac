@@ -1,0 +1,5 @@
+GenesisUI 1.6.0 with Bootstrap 4 Alpha 6 has landed! What's new?
+
+Bootstrap 4 Alpha 6 has landed, and it’s one of biggest ships to date. Grid system and all major components has been rewritten and now support flexbox. That's why we had to make some big changes in our templates to support latest version of Bootstrap.
+
+Here you can find upgrade guide: https://genesisui.com/migration-to-160.html
