@@ -22,17 +22,6 @@
 
 	<!-- Google Firebase Setup -->
 	<script src="https://www.gstatic.com/firebasejs/3.7.1/firebase.js"></script>
-	<script>
-	  // Initialize Firebase
-	  var config = {
-	    apiKey: "AIzaSyD98_8qlaeufS_1nwJ3Dv8auLi93AjhW5A",
-	    authDomain: "banpac-4d0af.firebaseapp.com",
-	    databaseURL: "https://banpac-4d0af.firebaseio.com",
-	    storageBucket: "banpac-4d0af.appspot.com",
-	    messagingSenderId: "1079004100386"
-	  };
-	  firebase.initializeApp(config);
-	</script>
 
 	<!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
 	<!--[if lt IE 9]>
@@ -72,19 +61,61 @@
 							
 							<div class="clearfix"></div>
 							
-							<button type="submit" class="btn btn-primary col-xs-12">Login</button>
+							<button id="loginBtn" type="button" class="btn btn-primary col-xs-12">Login</button>
 						</fieldset>	
 					</form>
+					<div id="errDisplay" style="color:red; ">
+						<em id="loginErrorMessage"></em>
+					</div>
 					<hr>
 					<h3>Forgot Password?</h3>
 					<p>
 						No problem, <a href="bacpac-login.html#">click here</a> to get a new password.
-					</p>	
+					</p>
+					<hr>
+					<h3>New to Bacpac?</h3>
+					<p>
+						<button id="createAccount" class="btn btn-success" data-toggle="modal" data-target="#signUpModal">Create Account</button>
+					</p>
 				</div>
 			</div><!--/row-->
 		</div><!--/row-->
 	</div><!--/container-->
-		
+
+	<!-- begin: Sign-Up Modal -->
+	<div id="signUpModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Sign Up</h4>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="login-box darker-background">
+							<h2>Create a new BacPac account</h2>
+							<form class="form-horizontal">
+								<fieldset>
+									<input class="input-large col-xs-12" name="newUsername" id="createUsername" type="text" placeholder="new username"/>
+									<input class="input-large col-xs-12" name="newPassword" id="createPassword" type="password" placeholder="new password"/>
+									<div class="clearfix"></div>
+								</fieldset>
+							</form>
+							<div id="errDisplay" style="color:red; ">
+								<em id="errorMessage"></em>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button id="cancelSignUpBtn" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button id="signUpBtn" type="button" class="btn btn-primary">Sign Up</button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+	<!-- end: Sign-Up Modal -->
+
 	<!-- start: JavaScript-->
 		<!--[if !IE]>-->
 				<script src="assets/js/jquery-3.1.0.min.js"></script>
