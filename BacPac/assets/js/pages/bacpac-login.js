@@ -7,6 +7,14 @@ Don't use strict mode; there are possible browser compatilibity issues
 	// Initial Greeting
 	console.log("Welcome To The BacPac Login Page!");
 
+	// Enter Key Default Action Override
+	$(document).on("keydown", function(event){
+		if(event.which === 13){
+			// force enter key to invoke credential submission
+			$("#loginBtn").click();
+		}
+	});
+
 	// Google Firebase Initial Setup
 	var firebaseConfig = {
 		apiKey: "AIzaSyD98_8qlaeufS_1nwJ3Dv8auLi93AjhW5A",
@@ -25,7 +33,13 @@ Don't use strict mode; there are possible browser compatilibity issues
 	/* Listens for login state changes, and updates information as necessary */
 	auth.onAuthStateChanged(function(user){
 		if (user) {		// ...if a user is currently signed in
-			console.log("User: " + user.displayName);
+			console.log("Logged in as User: " + user.displayName);
+			console.log("Email: " + user.email);
+			console.log("Verification: " + user.emailVerified);
+			console.log("photoURL: " + user.photoURL);
+			console.log("Anonymity: " + user.isAnonymous);
+			console.log("ID: " + user.uid);
+			console.log("Provider: " + user.providerData);
 		} else {		// ...if a user is signed out
 			console.log("You are signed out. Please sign in using your account email and password, or create a new account");
 		}
