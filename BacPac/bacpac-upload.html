@@ -38,6 +38,59 @@
 	<link rel="shortcut icon" href="assets/ico/favicon.png">
 	<!-- end: Favicon and Touch Icons -->
 
+	<style>
+        #dragandrophandler {
+            border: 2px dotted #0B85A1;
+            width: 400px;
+            color: #92AAB0;
+            text-align: left;
+            vertical-align: middle;
+            padding: 10px 10px 10px 10px;
+            margin-bottom: 10px;
+            font-size: 200%;
+        }
+    
+        #drop-zone {
+            width: 360px;
+            height: 240px;
+            text-align: center;
+            padding: 86px 0 0;
+            outline: 2px dashed #92b0b3;
+            outline-offset: -10px;
+            -webkit-transition: outline-offset .15s ease-in-out, background-color .15s linear;
+            transition: outline-offset .15s ease-in-out, background-color .15s linear;
+            font-size: 1.25rem;
+            background-color: #c8dadf;
+            /* position: relative; */
+            /* padding: 100px 20px; */
+        }
+    
+        .btn-file input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+    
+        input[type=file] {
+            display: block;
+        }
+    
+        #drop-zone .drop-zone-caption {
+            font-size: 20px;
+            font-weight: 600;
+            color: #919fa9;
+            margin: 0 0 14px;
+        }
+    
+        .btn.btn-primary {
+            background-color: #00a8ff;
+            border-color: #00a8ff;
+        }
+    </style>
 </head>
 
 <body>
@@ -459,29 +512,23 @@
 							<div class="box-header">
 								<h2><i class="fa fa-edit"></i>Dropzone.js</h2>
 								<div class="box-icon">
-									<a href="form-dropzone.html#" class="btn-setting"><i class="fa fa-wrench"></i></a>
+									<a href="bacpac-upload.html" class="btn-setting"><i class="fa fa-wrench"></i></a>
 									<!-- <a href="form-dropzone.html#" class="btn-minimize"><i class="fa fa-chevron-up"></i></a> -->
 									<!-- <a href="form-dropzone.html#" class="btn-close"><i class="fa fa-times"></i></a> -->
 								</div>
 							</div>
 							<div class="box-content">
-								
-								<div class="alert alert-info">
-									<button type="button" class="close" data-dismiss="alert">×</button>
-									Drag & drop file upload with image preview
-								</div>
-									  
 								<div class="form-group">
 									<label class="control-label">File Upload</label>
-									<div class="controls">
-									  	<div id="dropzone">
-											<form action="test.html" class="dropzone">
-												<div class="fallback">
-													<input name="file" type="file" multiple="" />
-												</div>
-											</form>
-										</div>
-									</div>
+									<form class="box" method="post" action="" enctype="multipart/form-data">
+        								<div id="drop-zone">
+            								<div class="drop-zone-caption">Drag & Drop Files Here</div>
+            								<span class="btn btn-primary btn-file" style="position: relative">
+                								<span>Choose files</span>
+                								<input type="file"id="drop-zone-file" name="files[]" multiple>
+            								</span>
+        								</div>
+    								</form>
 								</div>
 							</div>
 						</div>
@@ -494,27 +541,37 @@
 	<!-- end: Container -->
 	
 	<!-- start: Modal -->
+
+	<!-- Modal Testing -->
 	<div class="modal fade" id="myModal">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title">Modal title</h4>
+					<h4 class="modal-title">File Upload</h4>
 				</div>
-				<div class="modal-body">
-					<p>Here settings can be configured...</p>
-				</div>
+
+				<!-- Dropzone -->
+				<form class="box" method="post" action="" enctype="multipart/form-data">
+        			<div id="drop-zone">
+            			<div class="drop-zone-caption">Drag & Drop Files Here</div>
+            			<span class="btn btn-primary btn-file" style="position: relative">
+                			<span>Choose files</span>
+                			<input type="file"id="drop-zone-file" name="files[]" multiple>
+            			</span>
+        			</div>
+    			</form>
+
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary">Save changes</button>
 				</div>
 			</div><!-- /.modal-content -->
 		</div><!-- /.modal-dialog -->
 	</div><!-- /.modal -->
 	<!-- end: Modal -->
+
 	
 	<div class="clearfix"></div>
-	
 	<!-- start: Footer -->
 	<footer>
 		
@@ -531,8 +588,27 @@
 		</div><!--/.row-->	
 	</footer>
 	<!-- end: Footer -->
-
 	<!-- start: JavaScript Includes -->
+
+		<!-- TODO: USE OFFICIAL BACPAC FIREBASE SCRIPT -->
+		<script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js"></script>
+		<script>
+		  // Initialize Firebase
+		  var config = {
+		    apiKey: "AIzaSyA8_jwESeKlQsO5VsIn0CudKRhNxU-Q1eg",
+		    authDomain: "bacpactest.firebaseapp.com",
+		    databaseURL: "https://bacpactest.firebaseio.com",
+		    projectId: "bacpactest",
+		    storageBucket: "bacpactest.appspot.com",
+		    messagingSenderId: "7980278317"
+		  };
+		  firebase.initializeApp(config);
+
+		  var storageRef = firebase.storage().ref();
+
+		</script> <!-- THIS IS SHAWN'S FIREBASE TEST PROJECT, NEEDS TO BE REPLACED -->
+
+
 		<!--[if !IE]>-->
 				<script src="assets/js/jquery-3.1.0.min.js"></script>
 		<!--<![endif]-->
@@ -569,6 +645,150 @@
 		
 		<!-- inline scripts related to this page -->
 		<script src="assets/js/pages/bacpac-upload.js"></script>
+
+		<!-- New Drag & Drop scripts -->
+		<!-- Credit: https://hurlatunde.github.io/articles/2017-01/multiple-drag-and-drop-file-uploading-to-firebase-storage -->
+		<script> 
+			var obj = $("#drop-zone");
+			obj.on('dragenter', function (e) {
+				e.stopPropagation();
+			    e.preventDefault();
+			    $(this).css('border', '2px solid #0B85A1');
+			});
+
+			obj.on('dragover', function (e) {
+			    e.stopPropagation();
+			    e.preventDefault();
+			});
+
+			obj.on('drop', function (e) {
+			    
+			    $(this).css('border', '2px dotted #0B85A1');
+			    e.preventDefault();
+			    var files = e.originalEvent.dataTransfer.files;
+			    
+			    //We need to send dropped files to Server
+			    handleFileUpload(files, obj);
+			});
+			    
+			$(document).on('dragenter', function (e) {
+			    e.stopPropagation();
+			    e.preventDefault();
+			});
+
+			$(document).on('dragover', function (e) {
+			    e.stopPropagation();
+			    e.preventDefault();
+			    obj.css('border', '2px dotted #0B85A1');
+			});
+
+			$(document).on('drop', function (e) {
+			    e.stopPropagation();
+			    e.preventDefault();
+			});
+			    
+			// automatically submit the form on file select
+			$('#drop-zone-file').on('change', function (e) {
+			    var files = $('#drop-zone-file')[0].files;
+			    handleFileUpload(files, obj);
+			});
+			    
+			function handleFileUpload(files, obj) {
+			    for (var i = 0; i < files.length; i++) {
+			        var fd = new FormData();
+			        fd.append('file', files[i]);
+			    
+			        console.log(files[i]);
+			        fireBaseImageUpload({
+			            'file': files[i],
+			            'path': storageRef + '/files'
+			        }, function (data) {
+			            //console.log(data);
+			            if (!data.error) {
+			                if (data.progress) {
+			                    // progress update to view here
+			                }
+			                if (data.downloadURL) {
+			                    // update done
+			                    // download URL here "data.downloadURL"
+			                }
+			            } else {
+			                console.log(data.error + ' Firebase image upload error');
+			            }
+			        });
+			    }
+			};
+			    
+			function fireBaseImageUpload(parameters, callBackData) {
+
+			    // expected parameters to start storage upload
+			    var file = parameters.file;
+			    var path = parameters.path;
+			    var name;
+
+			    //just some error check
+			    if (!file) { callBackData({error: 'file required to interact with Firebase storage'}); }
+			    if (!path) { callBackData({error: 'Node name required to interact with Firebase storage'}); }
+
+			    var metaData = {'contentType': file.type};
+			    var arr = file.name.split('.');
+			    var fileSize = formatBytes(file.size); // get clean file size (function below)
+			    var fileType = file.type;
+			    var n = file.name;
+
+			    // generate random string to identify each upload instance
+			    name = generateRandomString(12); //(location function below)
+
+			    //var fullPath = path + '/' + name + '.' + arr.slice(-1)[0];
+			    var fullPath = path + '/' + file.name;
+
+			    var uploadFile = storageRef.child(fullPath).put(file, metaData);
+
+			    // first instance identifier
+			    callBackData({id: name, fileSize: fileSize, fileType: fileType, fileName: n});
+
+			    uploadFile.on('state_changed', function (snapshot) {
+			        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+			        progress = Math.floor(progress);
+			        callBackData({
+			            progress: progress,
+			            element: name,
+			            fileSize: fileSize,
+			            fileType: fileType,
+			            fileName: n});
+			    }, function (error) {
+			        callBackData({error: error});
+			    }, function () {
+			        var downloadURL = uploadFile.snapshot.downloadURL;
+			        callBackData({
+			            downloadURL: downloadURL,
+			            element: name,
+			            fileSize: fileSize,
+			            fileType: fileType,
+			            fileName: n});
+			    });
+			}
+
+			function generateRandomString(length) {
+			    var chars = "abcdefghijklmnopqrstuvwxyz";
+			    var pass = "";
+			    for (var x = 0; x < length; x++) {
+			        var i = Math.floor(Math.random() * chars.length);
+			        pass += chars.charAt(i);
+			    }
+			    return pass;
+			}
+
+			function formatBytes(bytes, decimals) {
+			    if (bytes == 0) return '0 Byte';
+			    var k = 1000;
+			    var dm = decimals + 1 || 3;
+			    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+			    var i = Math.floor(Math.log(bytes) / Math.log(k));
+			    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+			}
+		</script>
+
 	<!-- end: JavaScript-->
 </body>
 </html>
