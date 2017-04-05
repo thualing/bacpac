@@ -38,6 +38,7 @@
 	<link rel="shortcut icon" href="assets/ico/favicon.png">
 	<!-- end: Favicon and Touch Icons -->
 
+	<!-- New Drag & Drop css -->
 	<style>
         #dragandrophandler {
             border: 2px dotted #0B85A1;
@@ -701,7 +702,7 @@
 			        console.log(files[i]);
 			        fireBaseImageUpload({
 			            'file': files[i],
-			            'path': storageRef + '/files'
+			            'path': "files/"
 			        }, function (data) {
 			            //console.log(data);
 			            if (!data.error) {
