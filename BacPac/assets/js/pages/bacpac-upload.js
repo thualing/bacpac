@@ -10,6 +10,7 @@ var config = {
 firebase.initializeApp(config);
 
 var storageRef = firebase.storage().ref();
+var databaseRef = firebase.database().ref();
 
 //New Drag & Drop scripts
 //Credit: https://hurlatunde.github.io/articles/2017-01/multiple-drag-and-drop-file-uploading-to-firebase-storage
@@ -65,7 +66,7 @@ function handleFileUpload(files, obj) {
         console.log(files[i]);
         fireBaseImageUpload({
             'file': files[i],
-            'path': "files/"
+            'path': "files/"//Storage Bucket path to store files.
         }, function (data) {
             //console.log(data);
             if (!data.error) {
@@ -75,9 +76,11 @@ function handleFileUpload(files, obj) {
                 if (data.downloadURL) {
                     // update done
                     // download URL here "data.downloadURL"
+                    alert("Upload complete.");
                 }
             } else {
                 console.log(data.error + ' Firebase image upload error');
+                alert("Unsuccessful Upload.");
             }
         });
     }
