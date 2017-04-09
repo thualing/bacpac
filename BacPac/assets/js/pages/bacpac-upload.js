@@ -1,17 +1,11 @@
-$(document).ready(function(){
-	/*------ Dropzone Init ------*/
-	$(".dropzone").dropzone();
-});
-
 // Initialize Firebase
-// Currently using Shawn's FB Project, Replace with official BacPac FB Project
 var config = {
-	apiKey: "AIzaSyA8_jwESeKlQsO5VsIn0CudKRhNxU-Q1eg",
-	authDomain: "bacpactest.firebaseapp.com",
-	databaseURL: "https://bacpactest.firebaseio.com",
-	projectId: "bacpactest",
-	storageBucket: "bacpactest.appspot.com",
-	messagingSenderId: "7980278317"
+    apiKey: "AIzaSyD98_8qlaeufS_1nwJ3Dv8auLi93AjhW5A",
+    authDomain: "banpac-4d0af.firebaseapp.com",
+    databaseURL: "https://banpac-4d0af.firebaseio.com",
+    projectId: "banpac-4d0af",
+    storageBucket: "banpac-4d0af.appspot.com",
+    messagingSenderId: "1079004100386"
 };
 firebase.initializeApp(config);
 
