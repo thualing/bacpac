@@ -187,7 +187,7 @@ function getParameterByName(name, url) {
 
 /* Utility: readSessionData */
 function readSessionData(userId) {
- database.ref("/sessions/" + userId).once("value").then( function(snapshot){
+ databaseRef.ref("/sessions/" + userId).once("value").then( function(snapshot){
      user = snapshot.val();
      console.log("Current User: " + JSON.stringify(user));
  });
