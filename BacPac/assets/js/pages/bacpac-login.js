@@ -59,6 +59,7 @@ Don't use strict mode; there are possible browser compatilibity issues
 
 	// Google Firebase Service Setup
 	var auth = firebase.auth();
+	var database = firebase.database(app);
 
 	// Initial Page Setup
 	/* Logs the previous user out, just in case they have not done so themselves */
@@ -72,14 +73,15 @@ Don't use strict mode; there are possible browser compatilibity issues
 	/* Listens for login state changes, and updates information as necessary */
 	auth.onAuthStateChanged(function(user) {
 		if (user) {		// ...if a user is currently signed in
-			console.log("Logged in as User: " + user.displayName);
-			console.log("Email: " + user.email);
-			console.log("Verification: " + user.emailVerified);
-			console.log("photoURL: " + user.photoURL);
-			console.log("Anonymity: " + user.isAnonymous);
-			console.log("ID: " + user.uid);
-			console.log("Provider: " + user.providerData);
+			// console.log("Logged in as User: " + user.displayName);
+			// console.log("Email: " + user.email);
+			// console.log("Verification: " + user.emailVerified);
+			// console.log("photoURL: " + user.photoURL);
+			// console.log("Anonymity: " + user.isAnonymous);
+			// console.log("ID: " + user.uid);
+			// console.log("Provider: " + user.providerData);
 			if (!user.emailVerified && createAccountModalShown) {
+				// Send email verification
 				user.sendEmailVerification().then(function () {
 					// If email sent...
 					console.log("Verification Email sent successfully!");
@@ -94,9 +96,14 @@ Don't use strict mode; there are possible browser compatilibity issues
 					$('#signUpModal').modal('hide');
 				});
 			} else if (!user.emailVerified) {
-
+				// Prevent sign-in without verifying
+				console.log("Please complete verification");
+				$('#emailVerificationModalBody').html("<h5>Verification Required</h5> <p>Please <strong>verify</strong> your email by checking out the Verification Email we sent you!</p>");
+				$('#emailVerificationModal').modal('show');
+				$('#signUpModal').modal('hide');
 			} else if (user.uid) {
-				window.location = ('bacpac-upload.html?uid=' + user.uid);
+				writeSessionData(user);
+				window.location = ('bacpac-upload.html?uid=' + user.uid + '&email=' + user.email);
 				// console.log("USERID is Active");
 			}
 		} else {		// ...if a user is signed out
@@ -157,3 +164,15 @@ Don't use strict mode; there are possible browser compatilibity issues
 			$('#loginErrorMessage').html(errMsg);
 		});
 	});
+
+/* Utility: Database writeSessionData*/
+	function writeSessionData(user) {
+		database.ref("sessions/" + user.uid).set({
+			email: user.email,
+			uid: user.uid,
+			emailVerified: user.emailVerified,
+			photoURL: user.photoURL,
+			isAnonymous: user.isAnonymous,
+			providerData: user.providerData
+		});
+	}
