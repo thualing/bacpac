@@ -1,0 +1,8 @@
+/* RJ's Custom Login Box CSS Classes
+=================================================================== */
+.darker-background input[type="text"],
+.darker-background input[type="password"]{
+	background: #b6bbc8;
+}
+
+/*#b6bbc8*/
