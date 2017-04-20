@@ -88,6 +88,7 @@ Don't use strict mode; there are possible browser compatilibity issues
 					$('#emailVerificationModalBody').html("<h5>Verification sent to " + user.email + "</h5> <p>Please <strong>verify</strong> your email by checking out the Verification Email we sent you!</p>");
 					$('#emailVerificationModal').modal('show');
 					$('#signUpModal').modal('hide');
+					initNewUser(user);
 				}, function (err) {
 					// If err...
 					console.log("Verification error: " + err);
@@ -165,14 +166,83 @@ Don't use strict mode; there are possible browser compatilibity issues
 		});
 	});
 
-/* Utility: Database writeSessionData*/
+/* Utility: Database writeSessionData */
 	function writeSessionData(user) {
+		// Record Date
+		var d = Date.now();
+		d = d.toString();
+
+		// Safety check
+		if (!user) return false;
+
+		// Instantiate the user session
 		database.ref("sessions/" + user.uid).set({
 			email: user.email,
 			uid: user.uid,
 			emailVerified: user.emailVerified,
 			photoURL: user.photoURL,
 			isAnonymous: user.isAnonymous,
-			providerData: user.providerData
+			providerData: user.providerData,
+			date: d
+		}).then( function() {
+			console.log("Session started... " + d);
+			return true;
+		}).catch( function(err) {
+			console.log("Session error! " + d);
+			return false;
+		});
+	}
+
+/* Utility: Database initNewUser */
+	function initNewUser(user) {
+		// Safety check
+		if (!user) return false;
+
+		// Setup the initialization directories
+		var initRefs = {};
+		initRefs["fileAttribute/" + user.uid] = {		// init user's fileAttribute tracker
+			"0": {
+				someFileAttr: "customAttribute"
+			}
+		};
+		initRefs["fileName/" + user.uid] = {			// init user's fileName tracker
+			"0": {
+				path: "/"
+			}
+		};
+		initRefs["folder/" + user.uid] = {				// init user's folder tracker (only tracks FOLDERS)
+			/*
+			// a folder in a user's root folder (level 0, folder 1)
+			"0_1": "1_1",	// a folder nested in a folder from user's root folder (L0_folder1's level 1, folder 1)
+			
+			// another folder in user's root folder (level 0, folder 2)
+			"0_2": {
+				"1_1":{		// a folder (with subfolders) nested in another folder from user's root folder (L0_folder2's level 1, folder 1)
+
+				},
+				"1_2": 0 	// " " (without subfolders) " "
+			}
+			*/
+
+			"0": 0
+		};
+		initRefs["shared/" + user.uid] = {		// init user's shared with me folder
+			fromOtherUsers: "0",
+			withOtherUsers: "0"
+		};
+		initRefs["trash/" + user.uid] = {	// init user's "trash" folder
+			0: {	// fileName
+				dataDeleted: "00/00/00",
+				prevPath: "/"
+			}
+		};
+
+		// Init a user
+		database.ref().update(initRefs).then(function(){
+			console.log("User successfully initalized...");
+			return true;
+		}).catch(function(error){
+			console.log("User Initialization Error!");
+			return false;
 		});
 	}
