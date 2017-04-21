@@ -186,6 +186,85 @@ $("#logoutBtn").on("click", function(){
         console.log("Internal Error Occurred! [" + error + "]");
     });
 });
+    
+function fireBaseImageUpload(parameters, callBackData) {
+
+    // expected parameters to start storage upload
+    var file = parameters.file;
+    var path = parameters.path;
+    var name;
+
+    //just some error check
+    if (!file) { callBackData({error: 'file required to interact with Firebase storage'}); }
+    if (!path) { callBackData({error: 'Node name required to interact with Firebase storage'}); }
+
+    var metaData = {'contentType': file.type};
+    var arr = file.name.split('.');
+    var fileSize = formatBytes(file.size); // get clean file size (function below)
+    var fileType = file.type;
+    var n = file.name;
+
+    // generate random string to identify each upload instance
+    name = generateRandomString(12); //(location function below)
+
+    //var fullPath = path + '/' + name + '.' + arr.slice(-1)[0];
+    var fullPath = path + '/' + file.name;
+
+    var uploadFile = storageRef.child(fullPath).put(file, metaData);
+
+    // first instance identifier
+    callBackData({id: name, fileSize: fileSize, fileType: fileType, fileName: n});
+
+    uploadFile.on('state_changed', function (snapshot) {
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        progress = Math.floor(progress);
+        callBackData({
+            progress: progress,
+            element: name,
+            fileSize: fileSize,
+            fileType: fileType,
+            fileName: n});
+    }, function (error) {
+        callBackData({error: error});
+    }, function () {
+        var downloadURL = uploadFile.snapshot.downloadURL;
+        callBackData({
+            downloadURL: downloadURL,
+            element: name,
+            fileSize: fileSize,
+            fileType: fileType,
+            fileName: n});
+    });
+}
+
+function generateRandomString(length) {
+    var chars = "abcdefghijklmnopqrstuvwxyz";
+    var pass = "";
+    for (var x = 0; x < length; x++) {
+        var i = Math.floor(Math.random() * chars.length);
+        pass += chars.charAt(i);
+    }
+    return pass;
+}
+
+function formatBytes(bytes, decimals) {
+    if (bytes == 0) return '0 Byte';
+    var k = 1000;
+    var dm = decimals + 1 || 3;
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+/* Action: Logout Button click */
+$("#logoutBtn").on("click", function(){
+ auth.signOut().then(function(){
+     console.log("Signing Out");
+     window.location = ("bacpac-login.html");
+ }).catch(function(error){
+     console.log(error);
+ });
+});
 
 /* Utility: Query String Parameter Retriever */
 function getParameterByName(name, url) {
