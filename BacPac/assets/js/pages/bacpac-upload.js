@@ -10,7 +10,7 @@ var config = {
 firebase.initializeApp(config);
 
 var storageRef = firebase.storage().ref();
-var databaseRef = firebase.database();
+var database = firebase.database();
 var auth = firebase.auth();
 
 // Firebase Authentication Safeguard
@@ -72,7 +72,7 @@ function handleFileUpload(files, obj) {
         console.log(files[i]);
         fireBaseImageUpload({
             'file': files[i],
-            'path': "files/"//Storage Bucket path to store files.
+            'path': "files/" + user.uid //Storage Bucket path to store files.
         }, function (data) {
             //console.log(data);
             if (!data.error) {
@@ -110,7 +110,7 @@ function fireBaseImageUpload(parameters, callBackData) {
     var n = file.name;
 
     // generate random string to identify each upload instance
-    name = generateRandomString(12); //(location function below)
+    uploadName = generateRandomString(12); //(location function below)
 
     //var fullPath = path + '/' + name + '.' + arr.slice(-1)[0];
     var fullPath = path + '/' + file.name;
@@ -118,14 +118,14 @@ function fireBaseImageUpload(parameters, callBackData) {
     var uploadFile = storageRef.child(fullPath).put(file, metaData);
 
     // first instance identifier
-    callBackData({id: name, fileSize: fileSize, fileType: fileType, fileName: n});
+    callBackData({id: uploadName, fileSize: fileSize, fileType: fileType, fileName: n});
 
     uploadFile.on('state_changed', function (snapshot) {
         var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         progress = Math.floor(progress);
         callBackData({
             progress: progress,
-            element: name,
+            element: uploadName,
             fileSize: fileSize,
             fileType: fileType,
             fileName: n});
@@ -135,10 +135,21 @@ function fireBaseImageUpload(parameters, callBackData) {
         var downloadURL = uploadFile.snapshot.downloadURL;
         callBackData({
             downloadURL: downloadURL,
-            element: name,
+            element: uploadName,
             fileSize: fileSize,
             fileType: fileType,
             fileName: n});
+    });
+
+    var dBPath = encodeURIComponent(fullPath).replace('.', '%2E');
+    var dBFileName = encodeURIComponent(n).replace('.', '%2E')
+    writeUploadToDB(user.uid, dBFileName, dBPath);
+}
+
+/* Creates a record of file in DB*/
+function writeUploadToDB(userId, fileName, filePath) {
+    database.ref("fileName/" + userId +"/" + fileName).set({
+        'path' : filePath
     });
 }
 
@@ -163,14 +174,18 @@ function formatBytes(bytes, decimals) {
 
 /* Action: Logout Button click */
 $("#logoutBtn").on("click", function(){
- auth.signOut().then(function(){
-     console.log("Signing Out");
-     window.location = ("bacpac-login.html");
- }).catch(function(error){
-     console.log(error);
- });
+    database.ref("/sessions/" + user.uid).remove().then(function(){
+        console.log("Session Ended...");
+        auth.signOut().then(function(){
+            console.log("Signing Out");
+            window.location = ("bacpac-login.html");
+        }).catch(function(error){
+            console.log(error);
+        });
+    }).catch(function(error){
+        console.log("Internal Error Occurred! [" + error + "]");
+    });
 });
-
 
 /* Utility: Query String Parameter Retriever */
 function getParameterByName(name, url) {
@@ -187,8 +202,15 @@ function getParameterByName(name, url) {
 
 /* Utility: readSessionData */
 function readSessionData(userId) {
- databaseRef.ref("/sessions/" + userId).once("value").then( function(snapshot){
-     user = snapshot.val();
-     console.log("Current User: " + JSON.stringify(user));
- });
+    database.ref("/sessions/" + userId).once("value").then( function(snapshot){
+        user = snapshot.val();
+        console.log("Current User: " + JSON.stringify(user));
+        pageInit(user);
+    });
+}
+
+/* Utility: pageInit */
+function pageInit(user) {
+    // User Menu Info 
+    $("#profileUsername").html((user.email).toString());
 }
