@@ -63,13 +63,25 @@ $('#drop-zone-file').on('change', function (e) {
     var files = $('#drop-zone-file')[0].files;
     handleFileUpload(files, obj);
 });
+
+$("#uploadModal").on("hidden.bs.modal", function(e) {
+    $("#successUploadModalBody").html("");
+    $("#failUploadModalBody").html("");
+});
     
 function handleFileUpload(files, obj) {
+    var fileNames = "";
+    var successFiles = "";
     for (var i = 0; i < files.length; i++) {
         var fd = new FormData();
         fd.append('file', files[i]);
     
-        console.log(files[i]);
+        var currentFileName = files[i].name;
+        fileNames += "<li>" + currentFileName + "</li>";
+
+        //console.log(files[i]);
+        console.log(files[i].name);
+
         fireBaseImageUpload({
             'file': files[i],
             'path': "files/" + user.uid //Storage Bucket path to store files.
@@ -82,12 +94,18 @@ function handleFileUpload(files, obj) {
                 if (data.downloadURL) {
                     // update done
                     // download URL here "data.downloadURL"
-                    alert("Upload complete.");
+                    successFiles += "<li>" + currentFileName + "</li>";
+                    $("#filesUploadModalBody").html("<span>Files Uploaded:</span>" + "<ul>" + fileNames + "</ul>");
+                    $("#successUploadModalBody").html("<span>Successfully Uploaded:</span>" + "<ul>" + successFiles + "</ul>");
+                    $("#uploadModal").modal('show');
+                    
                 }
             } else {
                 console.log(data.error + ' Firebase image upload error');
-                alert("Unsuccessful Upload.");
+                $("#failUploadModalBody").html("<span>Unsuccessful Uploads:</span>" + "<ul><li>" +currentFileName + " Reason: <strong>" + data.error +"</strong></li></ul>");
+                $("#uploadModal").modal('show');
             }
+            
         });
     }
 };
@@ -109,6 +127,7 @@ function fireBaseImageUpload(parameters, callBackData) {
     var fileType = file.type;
     var n = file.name;
 
+    console.log(file.size);
     // generate random string to identify each upload instance
     uploadName = generateRandomString(12); //(location function below)
 
@@ -121,16 +140,26 @@ function fireBaseImageUpload(parameters, callBackData) {
     callBackData({id: uploadName, fileSize: fileSize, fileType: fileType, fileName: n});
 
     uploadFile.on('state_changed', function (snapshot) {
-        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        progress = Math.floor(progress);
-        callBackData({
-            progress: progress,
-            element: uploadName,
-            fileSize: fileSize,
-            fileType: fileType,
-            fileName: n});
+        if(file.size < 5 * 1024 * 1024) {
+            var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            progress = Math.floor(progress);
+            callBackData({
+                progress: progress,
+                element: uploadName,
+                fileSize: fileSize,
+                fileType: fileType,
+                fileName: n});
+            var dBPath = fullPath;
+            var dBFileName = arr[0] + "%2E" + arr[1];
+            writeUploadToDB(user.uid, dBFileName, dBPath);
+        }
     }, function (error) {
-        callBackData({error: error});
+        if(file.size > 5 * 1024 * 1024) {
+            callBackData({error: "File too large."});
+        }
+        else {
+            callBackData({error: error});
+        }
     }, function () {
         var downloadURL = uploadFile.snapshot.downloadURL;
         callBackData({
@@ -141,9 +170,7 @@ function fireBaseImageUpload(parameters, callBackData) {
             fileName: n});
     });
 
-    var dBPath = fullPath;
-    var dBFileName = arr[0] + "%2E" + arr[1];
-    writeUploadToDB(user.uid, dBFileName, dBPath);
+    
 }
 
 /* Creates a record of file in DB*/
