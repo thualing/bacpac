@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	
 	<!-- start: Meta -->
 	<meta charset="utf-8">
-	<title>SimpliQ - Flat & Responsive Bootstrap Admin Template</title>
-	<meta name="description" content="SimpliQ - Flat & Responsive Bootstrap Admin Template.">
-	<meta name="author" content="Łukasz Holeczek">
-	<meta name="keyword" content="SimpliQ, Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+	<title>BacPac</title>
+	<meta name="description" content="BacPac - Cloud File Sharing">
+	<meta name="author" content="Various">
+	<meta name="keyword" content="SimpliQ, Bootstrap, Template, Theme, Responsive, Fluid, Retina, BacPac, Files, Cloud, Sharing">
 	<!-- end: Meta -->
 	
 	<!-- start: Mobile Specific -->
@@ -18,8 +17,11 @@
 	<link href="assets/css/bootstrap.min.css" rel="stylesheet">
 	<link href="assets/css/style.min.css" rel="stylesheet">
 	<link href="assets/css/retina.min.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="assets/css/bacpac-login.css">
 	<!-- end: CSS -->
-	
+
+	<!-- Google Firebase Setup -->
+	<script src="https://www.gstatic.com/firebasejs/3.7.1/firebase.js"></script>
 
 	<!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
 	<!--[if lt IE 9]>
@@ -41,81 +43,133 @@
 </head>
 
 <body>
-		<div class="container">
+	<div class="container">
 		<div class="row">
-					
 			<div class="row">
-				<div class="login-box">
-					<h2>Login to your account</h2>
-					<form class="form-horizontal" action="index.html" method="post">
+				<div class="login-box darker-background">
+					<h2><img style="padding-right: 10px" src="assets/ico/BacPac_32x32.png">Login to your account</h2>
+					<form class="form-horizontal" action="bacpac.html" method="post">
 						<fieldset>
 							
-							<input class="input-large col-xs-12" name="username" id="username" type="text" placeholder="type username"/>
+							<input class="input-large col-xs-12" name="username" id="username" placeholder="type username" type="text">
 
-							<input class="input-large col-xs-12" name="password" id="password" type="password" placeholder="type password"/>
+							<input class="input-large col-xs-12" name="password" id="password" placeholder="type password" type="password">
 
 							<div class="clearfix"></div>
 							
-							<label class="remember" for="remember"><input type="checkbox" id="remember" />Remember me</label>
+							<label class="remember" for="remember"><input id="remember" type="checkbox">Remember me</label>
 							
 							<div class="clearfix"></div>
 							
-							<button type="submit" class="btn btn-primary col-xs-12">Login</button>
+							<button id="loginBtn" type="button" class="btn btn-primary col-xs-12">Login</button>
 						</fieldset>	
-
 					</form>
+					<div id="errDisplay" style="color:red; ">
+						<em id="loginErrorMessage"></em>
+					</div>
 					<hr>
 					<h3>Forgot Password?</h3>
 					<p>
-						No problem, <a href="login.html#">click here</a> to get a new password.
-					</p>	
+						No problem, <a href="bacpac-login.html#">click here</a> to get a new password.
+					</p>
+					<hr>
+					<h3>New to Bacpac?</h3>
+					<p>
+						<button id="createAccount" class="btn btn-success" data-toggle="modal" data-target="#signUpModal">Create Account</button>
+					</p>
 				</div>
 			</div><!--/row-->
-			
-				</div><!--/row-->		
-		
+		</div><!--/row-->
 	</div><!--/container-->
-	
-		
+
+	<!-- begin: Sign-Up Modal -->
+	<div id="signUpModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4 class="modal-title">Sign Up</h4>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<div class="login-box darker-background">
+							<h2>Create a new BacPac account</h2>
+							<form class="form-horizontal">
+								<fieldset>
+									<input class="input-large col-xs-12" name="newUsername" id="createUsername" placeholder="new username" type="text">
+									<input class="input-large col-xs-12" name="newPassword" id="createPassword" placeholder="new password" type="password">
+									<div class="clearfix"></div>
+								</fieldset>
+							</form>
+							<div id="errDisplay" style="color:red">
+								<em id="signupErrorMessage"></em>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button id="cancelSignUpBtn" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button id="signUpBtn" type="button" class="btn btn-primary">Sign Up</button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+	<!-- end: Sign-Up Modal -->
+
+	<!-- begin: Email Verification Modal -->
+	<div id="emailVerificationModal" class="modal fade" role="dialog" aria-lablledby="emailVerificationModalTitle" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<!-- Modal Header -->
+				<div class="modal-header">
+					<h3 id="emailVerificationModalTitle" class="modal-title">Email Verification</h3>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			        	<span aria-hidden="true">×</span>
+			        </button>
+				</div>
+				<!-- Modal Body -->
+				<div id="emailVerificationModalBody" class="modal-body">
+
+				</div>
+				<!-- Modal Footer -->
+				<div class="modal-footer">
+		        	<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		      	</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Email Verification Modal -->
+
 	<!-- start: JavaScript-->
-	<!--[if !IE]>-->
+		<!--[if !IE]>-->
+				<script src="assets/js/jquery-3.1.0.min.js"></script>
+		<!--<![endif]-->
 
-			<script src="assets/js/jquery-3.1.0.min.js"></script>
+		<!--[if IE]>
+			<script src="assets/js/jquery-1.11.0.min.js"></script>
+		<![endif]-->
 
-	<!--<![endif]-->
+		<!--[if !IE]>-->
+			<script type="text/javascript">
+				window.jQuery || document.write("<script src='assets/js/jquery-3.1.0.min.js'>"+"<"+"/script>");
+			</script>
+		<!--<![endif]-->
 
-	<!--[if IE]>
-	
-		<script src="assets/js/jquery-1.11.0.min.js"></script>
-	
-	<![endif]-->
+		<!--[if IE]>
+			<script type="text/javascript">
+		 	window.jQuery || document.write("<script src='assets/js/jquery-1.11.0.min.js'>"+"<"+"/script>");
+			</script>
+		<![endif]-->
+		<script src="assets/js/jquery-migrate-1.4.1.min.js"></script>
+		<script src="assets/js/bootstrap.min.js"></script>
 
-	<!--[if !IE]>-->
+		<!-- theme scripts -->
+		<script src="assets/js/custom.min.js"></script>
+		<script src="assets/js/core.min.js"></script>
 
-		<script type="text/javascript">
-			window.jQuery || document.write("<script src='assets/js/jquery-3.1.0.min.js'>"+"<"+"/script>");
-		</script>
-
-	<!--<![endif]-->
-
-	<!--[if IE]>
-	
-		<script type="text/javascript">
-	 	window.jQuery || document.write("<script src='assets/js/jquery-1.11.0.min.js'>"+"<"+"/script>");
-		</script>
-		
-	<![endif]-->
-	<script src="assets/js/jquery-migrate-1.4.1.min.js"></script>
-	<script src="assets/js/bootstrap.min.js"></script>
-	
-		
-	
-		
-	<!-- theme scripts -->
-	<script src="assets/js/custom.min.js"></script>
-	<script src="assets/js/core.min.js"></script>
-		
+		<!-- inline scripts related to this page -->
+		<script src="assets/js/pages/bacpac-login.js"></script>
 	<!-- end: JavaScript-->
 	
-</body>
-</html>
+
+</body></html>
