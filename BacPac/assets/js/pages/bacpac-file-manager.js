@@ -55,71 +55,13 @@ $(document).ready(function () {
 		/* Initialize fileManagerFoldersPane with root directory folders */
 		initFolderPane();
 
-		setupLogoutProtocol("logoutBtn", database);
-
-		// /* Action: Logout Button click */
-		// $("#logoutBtn").on("click", function() {
-		//     database.ref("/sessions/" + user.uid).remove().then(function(){
-		//         console.log("Session Ended...");
-		//         auth.signOut().then(function(){
-		//             console.log("Signing Out");
-		//             window.location = ("bacpac-login.html");
-		//         }).catch(function(error){
-		//             console.log(error);
-		//         });
-		//     }).catch(function(error){
-		//         console.log("Internal Error Occurred! [" + error + "]");
-		//     });
-		// });
+		/* Apply proper logout protocol to the logout button */
+		setupLogoutProtocol("logoutBtn", database, auth);
 	}
 
 
 
 
-
-/* Utility: setupLogoutProtocol
-		Description:
-			Initializes the page's logout button with the proper protocols to logout.
-			Adds a click event listener to the element specified by logoutButtonID to do so.
-		Expects:
-			The element that will have the event listener applied to it IS ASSUMED to be a button
-			(i.e. <button>...</button>)
-		Parameters:
-			string logoutButtonID - the ID of the logout button element
-			Object dbRef - a reference to the firebase.database() object
-			Object authRef - a reference to the firebase.auth() object
-			(optional) Function callback - a callback to run after this function completes; It is not passed any parameters.
-		Returns:
-			false - if invalid parameters
-			true - if call succeeded
-*/
-	function setupLogoutProtocol(logoutButtonID, dbRef, authRef, callback) {
-		if (!logoutButtonID || !dbRef) {
-			console.log("Error:setupLogoutProtocol: invalid parameter(s)");
-			return false;
-		} else if (logoutButtonID === '') {
-			console.log("Error:setupLogoutProtocol: invalid element ID");
-			return false;
-		}
-		/* Action: Logout Button click */
-		$("#" + logoutButtonID).on("click", function() {
-		    dbRef.ref("/sessions/" + user.data.uid).remove().then(function(){
-		        console.log("Session Ended...");
-		        authRef.signOut().then(function(){
-		            console.log("Signing Out");
-		            window.location = ("bacpac-login.html");
-		        }).catch(function(error){
-		            console.log(error);
-		        });
-		    }).catch(function(error){
-		        console.log("Internal Error Occurred! [" + error + "]");
-		    });
-		});
-
-		if (callback) callback();
-
-		return true;
-	}
 
 /* File Manager Utility: initFolderPane
 		Description:
