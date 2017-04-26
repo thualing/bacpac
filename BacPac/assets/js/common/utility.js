@@ -43,23 +43,52 @@ function generateRandomString(length) {
         Description:
             grab's the current user's session data from the database
             for updating the page's relevant elements with that data (i.e the
-            user's username area)
+            user's username area). Also overrides <a></a> element redirects by
+            calling initTabs().
         Expects:
-            N/A
+            before calling this function, targetVar must be instantiated in your
+            .js file as an object with a member "data"
+
+            EXAMPLE: =====================================================================================
+                var db = firebase.database();
+                .
+                .
+                .
+                var user = { data: "" };
+                .
+                .
+                .
+                readSessionData(user, getParameterByName("uid"), db);
+            end EXAMPLE: =================================================================================
         Parameters:
+            Object targetVar - the page's .js file's user variable to store object data to
             string userId - the ID of the current user to read
-            FirebaseObject dbRef - the firebase.database() object
+            FirebaseObject dbRef - a reference to the firebase.database() object
+            (optional) Function callback - a function to run after readSessionData succesfully executes; it is passed the user variable
         Returns:
             true - if successful
             false - if invalid parameters
 */
-function readSessionData(userId, dbRef) {
-    if (!userId || !dbRef) return false;
-    dbRef.ref("/sessions/" + userId).once("value").then( function(snapshot){
-        user = snapshot.val();
-        console.log("Current User: " + JSON.stringify(user));
-    });
-    return true;
+function readSessionData(targetVar, userId, dbRef, callback) {
+    if (!userId) {
+        console.log("Error:readSessionData: userId invalid");
+        return false;
+    } else if (!dbRef) {
+        console.log("Error:readSessionData: dbRef invalid");
+        return false;
+    } else {
+        dbRef.ref("/sessions/" + userId).once("value").then( function(snapshot){
+            targetVar.data = snapshot.val();
+            // console.log("Current User: " + JSON.stringify(snapshot.val())); // debug
+            initTabs(snapshot.val());
+            if(callback) {
+                callback(snapshot.val());   // execute the callback
+            }
+        }).catch(function(err){
+            console.log("Error:readSessionData:firebase.database: " + err);
+        });
+        return true;
+    }
 }
 
 /* Universal Utility: initTabs
@@ -95,13 +124,64 @@ function readSessionData(userId, dbRef) {
             end EXAMPLE ===================================================================================
 
         Parameters:
-            N/A
+            Object user - the user object containing firebase.auth().CurrentUser
         Returns:
             N/A
 */
-function initTabs() {
-    $(".bacpacTab").click(function(event) {
-        event.preventDefault();
-        window.location = this.href + "?uid=" + user.uid + "&email=" + user.email;
+function initTabs(user) {
+    if (!user) {
+        console.log("Error:initTabs: '" + user + "' is an invalid user");
+        return false;
+    } else {
+        console.log("User - " + JSON.stringify(user));
+        $(".bacpacTab").click(function(event) {
+            event.preventDefault();
+            window.location = this.href + "?uid=" + user.uid + "&email=" + user.email;
+            // console.log(this.href + "?uid=" + user.uid + "&email=" + user.email);    // debug
+        });
+    }
+}
+
+/* Universal Utility: setupLogoutProtocol
+        Description:
+            Initializes the page's logout button with the proper protocols to logout.
+            Adds a click event listener to the element specified by logoutButtonID to do so.
+        Expects:
+            The element that will have the event listener applied to it IS ASSUMED to be a button
+            (i.e. <button>...</button>)
+        Parameters:
+            string logoutButtonID - the ID of the logout button element
+            Object dbRef - a reference to the firebase.database() object
+            Object authRef - a reference to the firebase.auth() object
+            (optional) Function callback - a callback to run after this function completes; It is not passed any parameters.
+        Returns:
+            false - if invalid parameters
+            true - if call succeeded
+*/
+function setupLogoutProtocol(logoutButtonID, dbRef, authRef, callback) {
+    if (!logoutButtonID || !dbRef) {
+        console.log("Error:setupLogoutProtocol: invalid parameter(s)");
+        return false;
+    } else if (logoutButtonID === '') {
+        console.log("Error:setupLogoutProtocol: invalid element ID");
+        return false;
+    }
+    /* Action: Logout Button click */
+    $("#" + logoutButtonID).on("click", function() {
+        dbRef.ref("/sessions/" + user.data.uid).remove().then(function(){
+            console.log("Session Ended...");
+            authRef.signOut().then(function(){
+                console.log("Signing Out");
+                window.location = ("bacpac-login.html");
+            }).catch(function(error){
+                console.log(error);
+            });
+        }).catch(function(error){
+            console.log("Internal Error Occurred! [" + error + "]");
+        });
     });
+
+    if (callback) callback();
+
+    return true;
 }
