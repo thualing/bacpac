@@ -20,6 +20,8 @@
 	<link href="assets/css/retina.min.css" rel="stylesheet">
 	<!-- end: CSS -->
 	
+	<!-- Google Firebase Setup -->
+	<script src="https://www.gstatic.com/firebasejs/3.7.1/firebase.js"></script>
 
 	<!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
 	<!--[if lt IE 9]>
@@ -337,7 +339,7 @@
 							<!-- User Greeting -->
 							<div class="user">
 								<span class="hello">User:</span>
-								<span class="name">Some Username</span>
+								<span id="profileUsername" class="name">Some Username</span>
 							</div>
 						</a>
 						<ul class="dropdown-menu">
@@ -363,7 +365,7 @@
 								</a>
 							</li>
 							<li>
-								<a href="bacpac-login.html">
+								<a id="logoutBtn" href="bacpac-login.html">
 									<i class="fa fa-off"></i>
 									Logout
 								</a>
@@ -464,12 +466,25 @@
 									<!-- <a href="file-manager.html#" class="btn-close"><i class="fa fa-times"></i></a> -->
 								</div>
 							</div>
-							<div class="box-content">
+							<div class="box-content clearfix">
 								<div class="alert alert-info">
 									<button type="button" class="close" data-dismiss="alert">×</button>
-									<i class="fa fa-info-sign"></i> As its a demo, you currently have read-only permission, in your server you may do everything like, upload or delete. It will work on a server only.
+									<i class="fa fa-info-sign"></i> Instructions:
 								</div>
-								<div class="file-manager"></div>
+
+								<!-- start: File Manager -->
+								<div id="fileManager" class="container-fluid">
+									<div class="row">
+										<div id="fileManagerFoldersPane" class="col-md-3 well box-content clearfix">
+											
+										</div>
+										<div id="fileManagerContent" class="col-md-9">
+
+										</div>
+									</div>
+								</div>
+								<!-- end: File Manager -->
+
 							</div>
 						</div>
 					</div><!--/col-->
@@ -546,13 +561,14 @@
 
 		<!-- page scripts -->
 		<script src="assets/js/jquery-ui-1.10.3.custom.min.js"></script>
-		<script src="assets/js/jquery.elfinder.min.js"></script>
-		
+		<script src="assets/js/jquery.nestable.min.js"></script>
+
 		<!-- theme scripts -->
 		<script src="assets/js/custom.min.js"></script>
 		<script src="assets/js/core.min.js"></script>
 		
 		<!-- inline scripts related to this page -->
+		<script type="text/javascript" src="assets/js/common/utility.js"></script>
 		<script src="assets/js/pages/bacpac-file-manager.js"></script>	
 	<!-- end: JavaScript-->
 </body>
