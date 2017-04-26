@@ -43,23 +43,48 @@ function generateRandomString(length) {
         Description:
             grab's the current user's session data from the database
             for updating the page's relevant elements with that data (i.e the
-            user's username area)
+            user's username area). Also overrides <a></a> element redirects by
+            calling initTabs().
         Expects:
-            N/A
+            before calling this function, targetVar must be instantiated in your
+            .js file as an object with a member "data"
+
+            EXAMPLE: =====================================================================================
+                var db = firebase.database();
+                .
+                .
+                .
+                var user = { data: "" };
+                .
+                .
+                .
+                readSessionData(user, getParameterByName("uid"), db);
+            end EXAMPLE: =================================================================================
         Parameters:
+            Object targetVar - the page's .js file's user variable to store object data to
             string userId - the ID of the current user to read
-            FirebaseObject dbRef - the firebase.database() object
+            FirebaseObject dbRef - a reference to the firebase.database() object
         Returns:
             true - if successful
             false - if invalid parameters
 */
-function readSessionData(userId, dbRef) {
-    if (!userId || !dbRef) return false;
-    dbRef.ref("/sessions/" + userId).once("value").then( function(snapshot){
-        user = snapshot.val();
-        console.log("Current User: " + JSON.stringify(user));
-    });
-    return true;
+function readSessionData(targetVar, userId, dbRef) {
+    if (!userId) {
+        console.log("Error:readSessionData: userId invalid");
+        return false;
+    } else if (!dbRef) {
+        console.log("Error:readSessionData: dbRef invalid");
+        return false;
+    } else {
+        dbRef.ref("/sessions/" + userId).once("value").then( function(snapshot){
+            targetVar.data = snapshot.val();
+            // console.log("Current User: " + JSON.stringify(snapshot.val())); // debug
+            initTabs(snapshot.val());
+        }).catch(function(err){
+            console.log("Error:readSessionData:firebase.database: " + err);
+        });
+        return true;
+    }
 }
 
 /* Universal Utility: initTabs
@@ -95,13 +120,20 @@ function readSessionData(userId, dbRef) {
             end EXAMPLE ===================================================================================
 
         Parameters:
-            N/A
+            Object user - the user object containing firebase.auth().CurrentUser
         Returns:
             N/A
 */
-function initTabs() {
-    $(".bacpacTab").click(function(event) {
-        event.preventDefault();
-        window.location = this.href + "?uid=" + user.uid + "&email=" + user.email;
-    });
+function initTabs(user) {
+    if (!user) {
+        console.log("Error:initTabs: '" + user + "' is an invalid user");
+        return false;
+    } else {
+        console.log("User - " + JSON.stringify(user));
+        $(".bacpacTab").click(function(event) {
+            event.preventDefault();
+            window.location = this.href + "?uid=" + user.uid + "&email=" + user.email;
+            // console.log(this.href + "?uid=" + user.uid + "&email=" + user.email);    // debug
+        });
+    }
 }
