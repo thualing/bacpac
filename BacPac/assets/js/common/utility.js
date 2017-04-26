@@ -64,11 +64,12 @@ function generateRandomString(length) {
             Object targetVar - the page's .js file's user variable to store object data to
             string userId - the ID of the current user to read
             FirebaseObject dbRef - a reference to the firebase.database() object
+            (optional) Function callback - a function to run after readSessionData succesfully executes; it is passed the user variable
         Returns:
             true - if successful
             false - if invalid parameters
 */
-function readSessionData(targetVar, userId, dbRef) {
+function readSessionData(targetVar, userId, dbRef, callback) {
     if (!userId) {
         console.log("Error:readSessionData: userId invalid");
         return false;
@@ -80,6 +81,9 @@ function readSessionData(targetVar, userId, dbRef) {
             targetVar.data = snapshot.val();
             // console.log("Current User: " + JSON.stringify(snapshot.val())); // debug
             initTabs(snapshot.val());
+            if(callback) {
+                callback(snapshot.val());   // execute the callback
+            }
         }).catch(function(err){
             console.log("Error:readSessionData:firebase.database: " + err);
         });

@@ -24,8 +24,9 @@ $(document).ready(function () {
 	var storage = firebase.storage();
 
 	// Firebase Authentication Safeguard
-	var user = null;
+	var user = {data:""};
 	var uid = getParameterByName("uid");
+	readSessionData(user, getParameterByName("uid"), database, rsdCallback);
 	switch(uid) {
 		case null: {
 			// not found
@@ -40,8 +41,7 @@ $(document).ready(function () {
 			break;
 		}
 		default: {
-			// set user to the currentUser data
-			readSessionData(uid);
+			// all clear; login is valid
 			break;
 		}
 	}
@@ -50,40 +50,165 @@ $(document).ready(function () {
 
 
 
+/* MAIN - main function to run the page */
+	function main() {
+		/* Initialize fileManagerFoldersPane with root directory folders */
+		initFolderPane();
 
+		setupLogoutProtocol("logoutBtn", database);
 
-/* Action: Logout Button click */
-	$("#logoutBtn").on("click", function(){
-	    database.ref("/sessions/" + user.uid).remove().then(function(){
-	        console.log("Session Ended...");
-	        auth.signOut().then(function(){
-	            console.log("Signing Out");
-	            window.location = ("bacpac-login.html");
-	        }).catch(function(error){
-	            console.log(error);
-	        });
-	    }).catch(function(error){
-	        console.log("Internal Error Occurred! [" + error + "]");
-	    });
-	});
-
-/* Utility: Query String Parameter Retriever */
-	function getParameterByName(name, url) {
-	    if (!url) {
-	     url = window.location.href;
-	    }
-	    name = name.replace(/[\[\]]/g, "\\$&");
-	    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-	        results = regex.exec(url);
-	    if (!results) return null;
-	    if (!results[2]) return '';
-	    return decodeURIComponent(results[2].replace(/\+/g, " "));
+		// /* Action: Logout Button click */
+		// $("#logoutBtn").on("click", function() {
+		//     database.ref("/sessions/" + user.uid).remove().then(function(){
+		//         console.log("Session Ended...");
+		//         auth.signOut().then(function(){
+		//             console.log("Signing Out");
+		//             window.location = ("bacpac-login.html");
+		//         }).catch(function(error){
+		//             console.log(error);
+		//         });
+		//     }).catch(function(error){
+		//         console.log("Internal Error Occurred! [" + error + "]");
+		//     });
+		// });
 	}
 
-/* Utility: readSessionData */
-	function readSessionData(userId) {
-		database.ref("/sessions/" + userId).once("value").then( function(snapshot){
-		    user = snapshot.val();
-		    console.log("Current User: " + JSON.stringify(user));
+
+
+
+
+/* Utility: setupLogoutProtocol
+		Description:
+			Initializes the page's logout button with the proper protocols to logout.
+			Adds a click event listener to the element specified by logoutButtonID to do so.
+		Expects:
+			The element that will have the event listener applied to it IS ASSUMED to be a button
+			(i.e. <button>...</button>)
+		Parameters:
+			string logoutButtonID - the ID of the logout button element
+			Object dbRef - a reference to the firebase.database() object
+			Object authRef - a reference to the firebase.auth() object
+			(optional) Function callback - a callback to run after this function completes; It is not passed any parameters.
+		Returns:
+			false - if invalid parameters
+			true - if call succeeded
+*/
+	function setupLogoutProtocol(logoutButtonID, dbRef, authRef, callback) {
+		if (!logoutButtonID || !dbRef) {
+			console.log("Error:setupLogoutProtocol: invalid parameter(s)");
+			return false;
+		} else if (logoutButtonID === '') {
+			console.log("Error:setupLogoutProtocol: invalid element ID");
+			return false;
+		}
+		/* Action: Logout Button click */
+		$("#" + logoutButtonID).on("click", function() {
+		    dbRef.ref("/sessions/" + user.data.uid).remove().then(function(){
+		        console.log("Session Ended...");
+		        authRef.signOut().then(function(){
+		            console.log("Signing Out");
+		            window.location = ("bacpac-login.html");
+		        }).catch(function(error){
+		            console.log(error);
+		        });
+		    }).catch(function(error){
+		        console.log("Internal Error Occurred! [" + error + "]");
+		    });
 		});
+
+		if (callback) callback();
+
+		return true;
+	}
+
+/* File Manager Utility: initFolderPane
+		Description:
+			initializes the folder tree with the root directory folders.
+		Expects:
+			N/A
+		Parameters:
+			?
+		Returns:
+			?
+*/
+	function initFolderPane() {
+
+	}
+
+/* File Manager Utility: applyProfileData
+		Description:
+			Applies a user's profile data onto the relevant web page elements
+		Expects:
+			N/A
+		Parameters:
+			string elemID - the ID of the target element to apply profile data to
+			string data - the data to apply to the targeted element
+		Returns:
+			true - 
+*/
+	function applyProfileData(elemID, data) {
+		if (!elemID || !data) {
+			console.log("Error:applyProfileData: invalid parameter(s)");
+			return false;
+		} else if (elemID === '') {
+			console.log("Error:applyProfileData: invalid element ID");
+			return false;
+		}
+		$("#" + elemID).html(data);
+		return true;
+	}
+
+/* File Manager Utility: listDirectoryContent 
+		returns a list of the speficied path's folders and files (ONLY those in that directory, i.e. no children's children).
+*/
+	function listDirectoryContent(uid, fullPath) {
+		if (!uid) return false;
+		database.ref("/folder/" + uid + fullPath).once("value").then(function(snapshot){
+			return shapshot.val();
+		}).catch(function(error){
+			console.log(error);
+		});
+	}
+
+/* File Manager Utility: rsdCallback
+		Description:
+			The callback to run after reading Session Data
+		Expects:
+			N/A
+		Parameters:
+			Object data - the current user data 
+		Returns:
+			false - if error
+			true - if successful read of session data
+
+*/
+	function rsdCallback(data){
+		if (!data) {
+			console.log("Error:rsdCallback: invalid session");
+			window.location = "bacpac-login.html";
+			return false;
+		};
+		switch(data.uid) {
+			case null: {
+				// not found
+				console.log("Error: User ID not found");
+				window.location = "bacpac-login.html";
+				return false;
+				break;
+			}
+			case '': {
+				// invalid found
+				console.log("Error: User ID not found");
+				window.location = "bacpac-login.html";
+				return false;
+				break;
+			}
+			default: {
+				// all clear; login is valid
+				applyProfileData("profileUsername", data.email);
+				main();		// run page
+				return true;
+				break;
+			}
+		}
 	}
