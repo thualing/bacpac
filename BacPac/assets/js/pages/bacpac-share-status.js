@@ -7,12 +7,13 @@
         apiKey: "AIzaSyD98_8qlaeufS_1nwJ3Dv8auLi93AjhW5A",
         authDomain: "banpac-4d0af.firebaseapp.com",
         databaseURL: "https://banpac-4d0af.firebaseio.com",
+        projectId: "banpac-4d0af",
         storageBucket: "banpac-4d0af.appspot.com",
         messagingSenderId: "1079004100386"
     };
   
-    var app = firebase.initializeApp(firebaseConfig);	// Default App (REQUIRED)
-    console.log('App: ' + app.name);
+    firebase.initializeApp(firebaseConfig);	// Default App (REQUIRED)
+    //console.log('App: ' + app.name);
     function getParameterByName(name, url) {
         if (!url) {
             url = window.location.href;
@@ -43,7 +44,7 @@
     //var ref = storageRef.child(fullPath);
 
     //var user = firebase.auth().currentUser;
-    var ref = firebase.database().ref();
+   // var ref = firebase.database().ref();
   // sessiondata(getParameterByName("uid"));
    // ref.getMetadata().then(function (metadata) {
         
@@ -52,7 +53,7 @@
         // Uh-oh, an error occurred!
 //  });
     //var userId = firebase.auth().currentUser.uid;
-    function info(user) {
+   /* function info(user) {
         firebase.database().ref("sessions/" + param)({
             email: user.email,
             uid: user.uid,
@@ -65,7 +66,7 @@
             console.log("Current User: " + JSON.stringify(user));
         })
         
-    }
+    }*/
    
     function readSessionData(user, userId, database) {
         database.ref("/sessions/" + userId).once("value").then(function (snapshot) {
