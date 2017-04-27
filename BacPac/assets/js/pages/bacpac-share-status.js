@@ -67,8 +67,8 @@
         
     }
    
-    function readSessionData(userId) {
-        database.ref("/sessions/" + user.uid).once("value").then(function (snapshot) {
+    function readSessionData(user, userId, database) {
+        database.ref("/sessions/" + userId).once("value").then(function (snapshot) {
             user = snapshot.val();
             console.log("Current User: " + JSON.stringify(user));
             pageInit(user);
