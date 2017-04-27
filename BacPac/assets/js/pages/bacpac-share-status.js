@@ -12,9 +12,9 @@
         messagingSenderId: "1079004100386"
     };
   
-    firebase.initializeApp(firebaseConfig);	// Default App (REQUIRED)
-    //console.log('App: ' + app.name);
-    function getParameterByName(name, url) {
+    var app = firebase.initializeApp(firebaseConfig);	// Default App (REQUIRED)
+    console.log('App: ' + app.name);
+   /* function getParameterByName(name, url) {
         if (!url) {
             url = window.location.href;
         }
@@ -24,16 +24,16 @@
         if (!results) return null;
         if (!results[2]) return '';
         return decodeURIComponent(results[2].replace(/\+/g, " "));
-    }
-    var storageRef = firebase.storage().ref();
+    }*/
+    var storageRef = firebase.storage();
   
     var user = { data: "" };
    
-
+    var uid = getParameterByName("uid");
     var auth = firebase.auth();
     //var user = null;
-    var database = firebase.database();
-    readSessionData(user, getParameterByName("uid"), database);
+    var database = firebase.database(app);
+    readSessionData(user, getParameterByName("uid"), database, rsdCallback)
    // readSessionData(getParameterByName("uid"));
     //var file = parameters.file;
     //var path = parameters.path;
@@ -68,17 +68,17 @@
         
     }*/
    
-    function readSessionData(user, userId, database) {
+   /* function readSessionData(user, userId, database) {
         database.ref("/sessions/" + userId).once("value").then(function (snapshot) {
             user = snapshot.val();
             console.log("Current User: " + JSON.stringify(user));
             pageInit(user);
         });
-    }
-    function pageInit(user) {
+    }*/
+    /*function pageInit(user) {
         // User Menu Info 
         $("#profileUsername").html((user.email).toString());
-    }
+    }*/
         //if fromotherusers != 0, display aFileOtherUserOwns_fileName0
         $("#btn1").on("click", function () {
             // info(user);
@@ -116,6 +116,36 @@
                 console.log(error);
             });
         });
+        function rsdCallback(data) {
+            if (!data) {
+                console.log("Error:rsdCallback: invalid session");
+                window.location = "bacpac-login.html";
+                return false;
+            };
+            switch (data.uid) {
+                case null: {
+                    // not found
+                    console.log("Error: User ID not found");
+                    window.location = "bacpac-login.html";
+                    return false;
+                    break;
+                }
+                case '': {
+                    // invalid found
+                    console.log("Error: User ID not found");
+                    window.location = "bacpac-login.html";
+                    return false;
+                    break;
+                }
+                default: {
+                    // all clear; login is valid
+                    applyProfileData("profileUsername", data.email);
+                    main();		// run page
+                    return true;
+                    break;
+                }
+            }
+        }
         $(document).ready(function () {
             /* ---------- Datable ---------- */
             $('.datatable').dataTable({
