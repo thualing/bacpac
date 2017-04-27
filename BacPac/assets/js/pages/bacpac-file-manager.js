@@ -52,8 +52,18 @@ $(document).ready(function () {
 
 /* MAIN - main function to run the page */
 	function main() {
-		/* Initialize fileManagerFoldersPane with root directory folders */
-		initFolderPane();
+		console.log("Running Main Routine...");
+		// /* "p" Key Default Action Override */
+		// $(document).on("keydown", function(event){
+		// 	if(event.which === 112){
+		// 		console.log("p was pressed");
+		// 		/* Initialize fileManagerFoldersPane with root directory folders */
+		// 		updateFolderPane();
+		// 	}
+		// });
+
+		/* Init the user's front end file manager */
+		listDirectoryContent(user.data.uid, "/", database, updateFolderPane);
 
 		/* Apply proper logout protocol to the logout button */
 		setupLogoutProtocol("logoutBtn", database, auth);
@@ -63,18 +73,26 @@ $(document).ready(function () {
 
 
 
-/* File Manager Utility: initFolderPane
+
+/* File Manager Utility: updateFolderPane
 		Description:
-			initializes the folder tree with the root directory folders.
+			Updates the folder navigation tree with a directory's folders passed in through data.
+			Takes the form of a callback to run after the first call to listDirectoryContent()
 		Expects:
 			N/A
 		Parameters:
-			?
+			Object data - the current user's directory's hierarchy data
 		Returns:
-			?
+			false - if error
+			true - if successful read of session data
 */
-	function initFolderPane() {
-
+	function updateFolderPane(data) {
+		if (!data) {
+			console.log("Error:updateFolderPane: invalid data");
+			return false;
+		}
+		console.log("Updating navigation tree: " + JSON.stringify(data));
+		return true;
 	}
 
 /* File Manager Utility: applyProfileData
@@ -100,16 +118,39 @@ $(document).ready(function () {
 		return true;
 	}
 
-/* File Manager Utility: listDirectoryContent 
-		returns a list of the speficied path's folders and files (ONLY those in that directory, i.e. no children's children).
+/* File Manager Utility: listDirectoryContent
+		Description:
+			Gathers a list of the speficied path's folders and files (ONLY those in that directory, i.e. no children's children).
+			This list of files is passed to a callback, which should be used to acquire the list of files to display on UI
+		Expects:
+			N/A
+		Parameters:
+			string uid - the user's uid
+			string fullPath - the requested path (within the user's root directory) to view
+			Object dbRef - a reference to firebase.database()
+			Function callback - the callback to run after querying database; it is passed a JSON object of requested path contents
+		Returns:
+			true - if successful call
+			false - if invalid parameters
 */
-	function listDirectoryContent(uid, fullPath) {
-		if (!uid) return false;
-		database.ref("/folder/" + uid + fullPath).once("value").then(function(snapshot){
-			return shapshot.val();
+	function listDirectoryContent(uid, fullPath, dbRef, callback) {
+		if (!uid || !fullPath || !dbRef || !callback) {
+			console.log("Error:listDirectoryContent: invalid parameter(s)");
+			return false;
+		} else if (typeof uid !== "string" || typeof fullPath !== "string") {
+			console.log("Error:listDirectoryContent: type error(s)");
+			return false;
+		} else if (typeof callback !== "function") {
+			console.log("Error:listDirectoryContent: callback is not a function!");
+			return false;
+		}
+		dbRef.ref("/folder/" + uid + fullPath).once("value").then(function(snapshot){
+			callback(snapshot.val());
 		}).catch(function(error){
 			console.log(error);
 		});
+
+		return true;
 	}
 
 /* File Manager Utility: rsdCallback
@@ -122,7 +163,6 @@ $(document).ready(function () {
 		Returns:
 			false - if error
 			true - if successful read of session data
-
 */
 	function rsdCallback(data){
 		if (!data) {

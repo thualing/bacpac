@@ -14,9 +14,8 @@ var database = firebase.database();
 var auth = firebase.auth();
 
 // Firebase Authentication Safeguard
-var user = null;
-readSessionData(getParameterByName("uid"));
-
+var user = {data: ""};
+readSessionData(user, getParameterByName("uid"), database, pageInit);
 
 //New Drag & Drop scripts
 //Credit: https://hurlatunde.github.io/articles/2017-01/multiple-drag-and-drop-file-uploading-to-firebase-storage
@@ -72,7 +71,7 @@ function handleFileUpload(files, obj) {
         console.log(files[i]);
         fireBaseImageUpload({
             'file': files[i],
-            'path': "files/" + user.uid //Storage Bucket path to store files.
+            'path': "files/" + user.data.uid //Storage Bucket path to store files.
         }, function (data) {
             //console.log(data);
             if (!data.error) {
@@ -143,7 +142,7 @@ function fireBaseImageUpload(parameters, callBackData) {
 
     var dBPath = encodeURIComponent(fullPath).replace('.', '%2E');
     var dBFileName = encodeURIComponent(n).replace('.', '%2E')
-    writeUploadToDB(user.uid, dBFileName, dBPath);
+    writeUploadToDB(user.data.uid, dBFileName, dBPath);
 }
 
 /* Creates a record of file in DB*/
@@ -172,20 +171,20 @@ function formatBytes(bytes, decimals) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-/* Action: Logout Button click */
-$("#logoutBtn").on("click", function(){
-    database.ref("/sessions/" + user.uid).remove().then(function(){
-        console.log("Session Ended...");
-        auth.signOut().then(function(){
-            console.log("Signing Out");
-            window.location = ("bacpac-login.html");
-        }).catch(function(error){
-            console.log(error);
-        });
-    }).catch(function(error){
-        console.log("Internal Error Occurred! [" + error + "]");
-    });
-});
+// /* Action: Logout Button click */
+// $("#logoutBtn").on("click", function(){
+//     database.ref("/sessions/" + user.data.uid).remove().then(function(){
+//         console.log("Session Ended...");
+//         auth.signOut().then(function(){
+//             console.log("Signing Out");
+//             window.location = ("bacpac-login.html");
+//         }).catch(function(error){
+//             console.log(error);
+//         });
+//     }).catch(function(error){
+//         console.log("Internal Error Occurred! [" + error + "]");
+//     });
+// });
     
 function fireBaseImageUpload(parameters, callBackData) {
 
@@ -256,40 +255,41 @@ function formatBytes(bytes, decimals) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-/* Action: Logout Button click */
-$("#logoutBtn").on("click", function(){
- auth.signOut().then(function(){
-     console.log("Signing Out");
-     window.location = ("bacpac-login.html");
- }).catch(function(error){
-     console.log(error);
- });
-});
+// /* Action: Logout Button click */
+// $("#logoutBtn").on("click", function(){
+//  auth.signOut().then(function(){
+//      console.log("Signing Out");
+//      window.location = ("bacpac-login.html");
+//  }).catch(function(error){
+//      console.log(error);
+//  });
+// });
 
-/* Utility: Query String Parameter Retriever */
-function getParameterByName(name, url) {
-    if (!url) {
-     url = window.location.href;
-    }
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
-}
+// /* Utility: Query String Parameter Retriever */
+// function getParameterByName(name, url) {
+//     if (!url) {
+//      url = window.location.href;
+//     }
+//     name = name.replace(/[\[\]]/g, "\\$&");
+//     var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+//         results = regex.exec(url);
+//     if (!results) return null;
+//     if (!results[2]) return '';
+//     return decodeURIComponent(results[2].replace(/\+/g, " "));
+// }
 
-/* Utility: readSessionData */
-function readSessionData(userId) {
-    database.ref("/sessions/" + userId).once("value").then( function(snapshot){
-        user = snapshot.val();
-        console.log("Current User: " + JSON.stringify(user));
-        pageInit(user);
-    });
-}
+// /* Utility: readSessionData */
+// function readSessionData(userId) {
+//     database.ref("/sessions/" + userId).once("value").then( function(snapshot){
+//         user = snapshot.val();
+//         console.log("Current User: " + JSON.stringify(user));
+//         pageInit(user);
+//     });
+// }
 
 /* Utility: pageInit */
 function pageInit(user) {
-    // User Menu Info 
+    // User Menu Info
     $("#profileUsername").html((user.email).toString());
+    setupLogoutProtocol("logoutBtn", database, auth);
 }
