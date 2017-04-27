@@ -26,10 +26,14 @@
     }
     var storageRef = firebase.storage().ref();
   
+    var user = { data: "" };
+   
+
     var auth = firebase.auth();
-    var user = null;
+    //var user = null;
     var database = firebase.database();
-    readSessionData(getParameterByName("uid"));
+    readSessionData(user, getParameterByName("uid"), database);
+   // readSessionData(getParameterByName("uid"));
     //var file = parameters.file;
     //var path = parameters.path;
     var name;
@@ -64,7 +68,7 @@
     }
    
     function readSessionData(userId) {
-        database.ref("/sessions/M0XTf5QzEfMxw4q7PhuLXCyY6jb2").once("value").then(function (snapshot) {
+        database.ref("/sessions/" + user.uid).once("value").then(function (snapshot) {
             user = snapshot.val();
             console.log("Current User: " + JSON.stringify(user));
             pageInit(user);
