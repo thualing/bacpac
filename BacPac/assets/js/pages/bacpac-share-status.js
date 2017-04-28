@@ -14,17 +14,7 @@
   
     var app = firebase.initializeApp(firebaseConfig);	// Default App (REQUIRED)
     console.log('App: ' + app.name);
-   /* function getParameterByName(name, url) {
-        if (!url) {
-            url = window.location.href;
-        }
-        name = name.replace(/[\[\]]/g, "\\$&");
-        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-            results = regex.exec(url);
-        if (!results) return null;
-        if (!results[2]) return '';
-        return decodeURIComponent(results[2].replace(/\+/g, " "));
-    }*/
+   
     var storageRef = firebase.storage();
   
     var user = { data: "" };
@@ -33,10 +23,8 @@
     var auth = firebase.auth();
     //var user = null;
     var database = firebase.database(app);
-    readSessionData(user, getParameterByName("uid"), database, rsdCallback)
-   // readSessionData(getParameterByName("uid"));
-    //var file = parameters.file;
-    //var path = parameters.path;
+    readSessionData(user, getParameterByName("uid"), database, rsdCallback)//userId=getParameterByName("uid")
+   
     var name;
    // var metadata = { 'contentType': file.type };
    // var fullPath = path + '/' + file.name;
@@ -53,34 +41,11 @@
         // Uh-oh, an error occurred!
 //  });
     //var userId = firebase.auth().currentUser.uid;
-   /* function info(user) {
-        firebase.database().ref("sessions/" + param)({
-            email: user.email,
-            uid: user.uid,
-            emailVerified: user.emailVerified,
-            isAnonymous: user.isAnonymous,
-            providerData: user.providerData,
-
-        }).then(function (snapshot) {
-            var user = snapshot.val();
-            console.log("Current User: " + JSON.stringify(user));
-        })
-        
-    }*/
+  
    
-   /* function readSessionData(user, userId, database) {
-        database.ref("/sessions/" + userId).once("value").then(function (snapshot) {
-            user = snapshot.val();
-            console.log("Current User: " + JSON.stringify(user));
-            pageInit(user);
-        });
-    }*/
-    /*function pageInit(user) {
-        // User Menu Info 
-        $("#profileUsername").html((user.email).toString());
-    }*/
+   
         //if fromotherusers != 0, display aFileOtherUserOwns_fileName0
-        $("#btn1").on("click", function () {
+       /* $("#btn1").on("click", function () {
             // info(user);
             console.log(info(user))
         });
@@ -96,7 +61,7 @@
                     console.log("Current User: " + JSON.stringify(user));
                 });
             }
-        })
+        })*/
         //var newPostKey = firebase.database().ref(sKey).push().key;
 
       //  var thead = document.getElementsByTagName('thead')[0];
@@ -140,12 +105,90 @@
                 default: {
                     // all clear; login is valid
                     applyProfileData("profileUsername", data.email);
-                    main();		// run page
+                    main();
+                    sharing();// run page
                     return true;
                     break;
                 }
             }
         }
+
+        function sharing()
+        {
+            // var sharedwme = 
+            var thead = document.getElementsByTagName('thead')[0];
+            database.ref("/shared/uid/fromOtherUsers" + uid).once("value").then(function (snapshot) {
+                user.data = snapshot.val();
+                initTabs(snapshot.val());
+                var tr = document.createElement('tr');
+                var th = document.createElement('th');
+                //  th.innerText = snapshot.val().data + " --- " + JSON.stringify(snapshot.val());
+                th.innerText = " --- ";
+                tr.appendChild(th);
+                thead.appendChild(tr);
+                 console.log("Shared by: " + JSON.stringify(snapshot.val())); // debug
+               // initTabs(snapshot.val());
+               
+            })
+        }
+
+        function applyProfileData(elemID, data) {
+            if (!elemID || !data) {
+                console.log("Error:applyProfileData: invalid parameter(s)");
+                return false;
+            } else if (elemID === '') {
+                console.log("Error:applyProfileData: invalid element ID");
+                return false;
+            }
+            $("#" + elemID).html(data);
+            return true;
+        }
+        function listDirectoryContent(uid, fullPath, dbRef, callback) {
+            if (!uid || !fullPath || !dbRef || !callback) {
+                console.log("Error:listDirectoryContent: invalid parameter(s)");
+                return false;
+            } else if (typeof uid !== "string" || typeof fullPath !== "string") {
+                console.log("Error:listDirectoryContent: type error(s)");
+                return false;
+            } else if (typeof callback !== "function") {
+                console.log("Error:listDirectoryContent: callback is not a function!");
+                return false;
+            }
+            dbRef.ref("/folder/" + uid + fullPath).once("value").then(function (snapshot) {
+                callback(snapshot.val());
+            }).catch(function (error) {
+                console.log(error);
+            });
+
+            return true;
+        }
+
+        function updateFolderPane(data) {
+            if (!data) {
+                console.log("Error:updateFolderPane: invalid data");
+                return false;
+            }
+            console.log("Updating navigation tree: " + JSON.stringify(data));
+            return true;
+        }
+        function main() {
+            console.log("Running Main Routine...");
+            // /* "p" Key Default Action Override */
+            // $(document).on("keydown", function(event){
+            // 	if(event.which === 112){
+            // 		console.log("p was pressed");
+            // 		/* Initialize fileManagerFoldersPane with root directory folders */
+            // 		updateFolderPane();
+            // 	}
+            // });
+
+            /* Init the user's front end file manager */
+            listDirectoryContent(user.data.uid, "/", database, updateFolderPane);
+
+            /* Apply proper logout protocol to the logout button */
+            setupLogoutProtocol("logoutBtn", database, auth);
+        }
+
         $(document).ready(function () {
             /* ---------- Datable ---------- */
             $('.datatable').dataTable({
