@@ -91,8 +91,161 @@ $(document).ready(function () {
 			console.log("Error:updateFolderPane: invalid data");
 			return false;
 		}
-		console.log("Updating navigation tree: " + JSON.stringify(data));
+		// console.log("Updating navigation tree: " + JSON.stringify(data));	// debug
+
+		// Create the html templates needed to represent files/folders.
+		var counter = 0;
+		var fileElements = "";
+		var folderElements = "";
+		var currentDirectoryLedger = Object.keys(data);	// a string array of the files/folders in the current directory
+		// console.log("obj: " + currentDirectoryLedger[1]);	// debug
+
+		for(var i = 0; i < currentDirectoryLedger.length; i++) {
+			switch(currentDirectoryLedger[i]) {
+				case "0": {		// ignore this directory identifier; it was used as an initializer and is irrelevant
+					break;
+				}
+				default: {		// otherwise... process the files...
+					// console.log("A: " + currentDirectoryLedger[i] + " B:" + database + " C: " + uid);	// debug
+					distinguishEntity(currentDirectoryLedger[i], database, uid, function (result, key) {
+						switch (result) {
+							case "file": {
+								// console.log(result + " " + key);	// debug
+								// inserts elements into the UI that are identifiable via unique ids (i.e. "file1, file2,..., fileN") and class "fileElement"
+								// these elements, when clicked, will call the function specified by the "onclick" attrubute
+
+								// Button
+								/*
+								fileElements += "<div class='dropdown'><button id='file" + i + "' type='button' class='fileElement btn btn-info btn-block dropdown-toggle' data-toggle='dropdown'>" + decodeURIComponent(key) + "</button><ul id='folder" + i + "dropdown' class='dropdown-menu'><li><a href='#'>HI</a></li></ul></div>";
+								*/
+								var elementID = "file" + counter;
+								var elementDropdownID = "folder" + counter + "dropdown";
+								var fileName = decodeURIComponent(key);
+
+								// Dropdown Option Menu
+								
+/*								fileElements += "<div class='dropdown col-xs-6 col-md-3' style='text-align: left'>    <div id='" + elementID + "' class='fileElement dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>    <a href='#' class='thumbnail row'>    <span class='glyphicon glyphicon-file' style='font-size: xx-large'></span>" + fileName + "</a>    </div>    <ul id='" + elementDropdownID + "' class='dropdown-menu' style='position: static'>    <li class='dropdown-header'>Options</li>    <li>    <a href='#'>Download</a>    </li>    <li>    <a href='#'>Properties</a>    </li>    <li>    <a href='#' style='color:red'>Delete</a>    </li>    </ul>    </div>";*/
+
+								// Custom 1
+								fileElements += "<div class='col-xs-6 col-md-3' style=''>\
+									<div id='" + elementID + "' class='fileElement'>\
+										<a href='#' role='button' class='thumbnail'>\
+											<div>\
+												<span class='glyphicon glyphicon-file' style='font-size: large;display: block; word-wrap: break-word; width: inherit'></span>\
+												<span style='display: block; word-wrap: break-word; width: inherit'>" + fileName + "</span>\
+											</div>\
+										</a>\
+									</div>\
+								</div>";
+								
+
+								// Collapsible Option Menu
+								/*fileElements += "<div class='col-md-12' style='text-align: left'>    <div id='" + elementID + "' class='fileElement' style='text-align: inherit'>    <a href='#" + elementDropdownID + "' role='button' class='thumbnail btn btn-info row' data-toggle='collapse' aria-expanded='false' aria-controls='" + elementDropdownID + "'>    <span class='glyphicon glyphicon-file' style='font-size: xx-large'></span>" + fileName + "</a>    <div class='collapse' id='" + elementDropdownID + "'>    <ul class='well'>    <li><button href='#'>Download</button></li>    <li><button href='#'>Properties</button></li>    <li><button>Delete</button></li>    </ul>    </div>    </div>    </div>";*/
+								counter++;
+								break;
+							}
+							case "folder": {
+								folderElements += "<div class='list-group btn-group'><button id='folder" + i + "' type='button' class='folderElement list-group-item btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>" + decodeURIComponent(key) + "</button><ul id='folder" + i + "dropdown' class='dropdown-menu'><li><a href='#'>Hello</a></li></ul></div>";
+								break;
+							}
+							default: {
+								console.log("Error:updateFolderPane: entity error occurred");
+								break;
+							}
+						}
+						insertElement("fileManagerFoldersPane", folderElements);	// populate folder navigation tree
+						insertElement("fileManagerContent", fileElements);		// populate file area
+					});
+					break;
+				}
+			}
+		}
 		return true;
+	}
+
+/* File Manager Utility: distinguishEntity
+		Description:
+			Determines if the specified entity is a file or folder according to the user's databases
+		Expects:
+			?
+		Parameters:
+			string key - the key name of a fileName/folderName (a key provided by the database)
+			FirebaseObject dbRef - a reference to the firebase.database() object
+			string uid - the current user's uid
+			Function callback - a callback to run after execution; it is passed the entity type 
+				(i.e. "file" for a file, "folder" for a folder, "error" if the query encountered an error,
+				or "unknown" if otherwise), and the originally specified key
+		Returns:
+			false - if unsuccessful, or if an error occurred
+			true - if call was successfully processed
+*/
+	function distinguishEntity(key, dbRef, uid, callback) {
+		if (!key || !dbRef || !uid || !callback) {
+			console.log("Error:distinguishEntity: invalid parameter(s)");
+			return false;
+		} else if(typeof key !== "string" || typeof uid !== "string") {
+			console.log("Error:distinguishEntity: Type Error!");
+			return false;
+		} else if (key === "") {
+			console.log("Error:distinguishEntity: empty key");
+			return false;
+		} else if (uid === "") {
+			console.log("Error:distinguishEntity: empty uid");
+			return false;
+		}
+
+		// Cross-reference the key with fileName db
+		dbRef.ref('/fileName/' + uid + "/" + key).once("value").then(function(snapshot) {
+			var entity = snapshot.val();
+			// console.log("Entity = " + JSON.stringify(entity));	// debug
+			if (entity === null) {	// is a folder, i.e. the entity is not in the fileName registry
+				callback("folder", key);
+			} else if ((Object.keys(entity)).indexOf("path") !== -1) {		// is a file, i.e. entity was an object containing the "path" key
+				callback("file", key);
+			} else {
+				callback("unknown", key);
+			}
+		}).catch(function(error){
+			console.log("Error:distinguishEntity: Internal Error Occurred! [" + error + "]");
+			callback("error", key);
+		});
+		return true;
+	}
+
+/* File Manager Utility: insertElement
+		Description:
+			Inserts a html element into the specified UI area as a child element
+		Expects:
+			The element id specified must exist within the page, otherwise an error will be thrown
+			Note: Beware of inserting multiple htmlObj with the same ID; IDs are REQUIRED to be UNIQUE
+		Parameters:
+			string elemID - the ID of the element to insert the object into
+			string htmlObj - the html object to insert into the specified element
+		Returns:
+			false - if error
+			true - if successful insertion
+*/
+	function insertElement(elemID, htmlObj) {
+
+
+		// Check if element exists
+		switch($("#" + elemID).length) {
+			case 1: {
+				$("#" + elemID).html(htmlObj);
+				return true;
+				break;
+			}
+			case 0: {
+				console.log("Error:insertElement: element '" + elemID + "' not found");
+				return false;
+				break;
+			}
+			default: {
+				console.log("Error:insertElement: multiple instances of element '" + elemID + "'");
+				return false;
+				break;
+			}
+		}
 	}
 
 /* File Manager Utility: applyProfileData

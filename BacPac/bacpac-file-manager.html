@@ -18,6 +18,7 @@
 	<link href="assets/css/bootstrap.min.css" rel="stylesheet">
 	<link href="assets/css/style.min.css" rel="stylesheet">
 	<link href="assets/css/retina.min.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="assets/css/bacpac-file-manager.css">
 	<!-- end: CSS -->
 	
 	<!-- Google Firebase Setup -->
@@ -467,19 +468,30 @@
 								</div>
 							</div>
 							<div class="box-content clearfix">
-								<div class="alert alert-info">
+								<!-- <div class="alert alert-info">
 									<button type="button" class="close" data-dismiss="alert">×</button>
 									<i class="fa fa-info-sign"></i> Instructions:
-								</div>
+								</div> -->
+
+								<ol id="pathTracker" class="breadcrumb">
+									<li><a href="#">Home</a></li>
+								</ol>
 
 								<!-- start: File Manager -->
 								<div id="fileManager" class="container-fluid">
 									<div class="row">
-										<div id="fileManagerFoldersPane" class="col-md-3 well box-content clearfix">
-											
-										</div>
-										<div id="fileManagerContent" class="col-md-9">
+										<!-- <div id="fileManagerFoldersPane" class="col-md-3 well box-content clearfix list-group"> -->
+										<div class="col-md-3 container-fluid">
+											<div class="row panel panel-info">
+												<div class="panel-header"><span class="label label-info" style="display:block">Navigator</span></div>
+												<div id="fileManagerFoldersPane" class="panel-body">
 
+												</div>
+											</div>
+										</div>
+										<div class="col-md-9 container-fluid">
+											<div id="fileManagerContent" class="row well" style="overflow: auto">
+											</div>
 										</div>
 									</div>
 								</div>

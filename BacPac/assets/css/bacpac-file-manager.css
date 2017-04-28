@@ -1,0 +1,12 @@
+/* BacPac File Manager Custom CSS Styles*/
+
+.fileElement {
+	font-style: italic;
+	color: black;
+	font-size: x-small;
+}
+
+.folderElement {
+	font-style: oblique;
+	color: white;
+}
