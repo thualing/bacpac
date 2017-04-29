@@ -114,19 +114,24 @@
         }
 
         function sharing()
-        {
+        {//uid/fromOtherUsers/someOtherUser_Uid
             // var sharedwme = 
             var thead = document.getElementsByTagName('thead')[0];
-            database.ref("/shared/uid/fromOtherUsers" + uid).once("value").then(function (snapshot) {
+            database.ref("/shared/uid/fromOtherUsers/someOtherUser_Uid/aFileOtherUserOwns_fileName0").once("value").then(function (snapshot) {
                 user.data = snapshot.val();
                 initTabs(snapshot.val());
                 var tr = document.createElement('tr');
-                var th = document.createElement('th');
+                var td = document.createElement('td');
+                var td2 = document.createElement('td');
+               // var td = document.createElement('td class="center"');
                 //  th.innerText = snapshot.val().data + " --- " + JSON.stringify(snapshot.val());
-                th.innerText = " --- ";
-                tr.appendChild(th);
+                td2.innerText = " --- " + JSON.stringify(snapshot.val())//file name?
+                td.innerText = "hi";
+                // td.innerText = "123";
+                tr.appendChild(td2);
+                tr.appendChild(td);
                 thead.appendChild(tr);
-                 console.log("Shared by: " + JSON.stringify(snapshot.val())); // debug
+                 console.log("Shared file: " + JSON.stringify(snapshot.val())); // debug
                // initTabs(snapshot.val());
                
             })
