@@ -123,9 +123,11 @@
                 var tr = document.createElement('tr');
                 var td = document.createElement('td');
                 var td2 = document.createElement('td');
+            //    var userdata = snapshot.val().replace("\"", "");
+               
                // var td = document.createElement('td class="center"');
                 //  th.innerText = snapshot.val().data + " --- " + JSON.stringify(snapshot.val());
-                td2.innerText = " --- " + JSON.stringify(snapshot.val())//file name?
+                td2.innerText = JSON.stringify(snapshot.val())//file name?
                 td.innerText = "hi";
                 // td.innerText = "123";
                 tr.appendChild(td2);
