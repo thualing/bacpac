@@ -14,9 +14,8 @@ var database = firebase.database();
 var auth = firebase.auth();
 
 // Firebase Authentication Safeguard
-var user = null;
-readSessionData(getParameterByName("uid"));
-
+var user = {data: ""};
+readSessionData(user, getParameterByName("uid"), database, pageInit);
 
 //New Drag & Drop scripts
 //Credit: https://hurlatunde.github.io/articles/2017-01/multiple-drag-and-drop-file-uploading-to-firebase-storage
@@ -84,7 +83,7 @@ function handleFileUpload(files, obj) {
 
         fireBaseImageUpload({
             'file': files[i],
-            'path': "files/" + user.uid //Storage Bucket path to store files.
+            'path': "files/" + user.data.uid //Storage Bucket path to store files.
         }, function (data) {
             //console.log(data);
             if (!data.error) {
@@ -169,14 +168,25 @@ function fireBaseImageUpload(parameters, callBackData) {
             fileType: fileType,
             fileName: n});
     });
-
     
+    var dBPath = encodeURIComponent(fullPath).replace('.', '%2E');
+    var dBFileName = encodeURIComponent(n).replace('.', '%2E');
+    writeUploadToDB(user.data.uid, dBFileName, dBPath);
 }
 
 /* Creates a record of file in DB*/
 function writeUploadToDB(userId, fileName, filePath) {
-    database.ref("fileName/" + userId +"/" + fileName).set({
-        'path' : filePath
+    var plainTextFileName = decodeURIComponent(fileName);
+    var plainTextPath = decodeURIComponent(filePath);
+    database.ref("fileName/" + userId + "/" + fileName).set({
+        'path' : plainTextPath
+    });
+    database.ref("fileAttribute/" + userId + "/" + fileName).set({
+        '0' : 0
+    });
+    database.ref("folder/" + userId + "/" + fileName).set({
+        'name' : plainTextFileName,
+        'path' : plainTextPath
     });
 }
 
@@ -198,6 +208,7 @@ function formatBytes(bytes, decimals) {
     var i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
+
 
 /* Action: Logout Button click */
 $("#logoutBtn").on("click", function(){
@@ -234,10 +245,30 @@ function readSessionData(userId) {
         console.log("Current User: " + JSON.stringify(user));
         pageInit(user);
     });
+
+function generateRandomString(length) {
+    var chars = "abcdefghijklmnopqrstuvwxyz";
+    var pass = "";
+    for (var x = 0; x < length; x++) {
+        var i = Math.floor(Math.random() * chars.length);
+        pass += chars.charAt(i);
+    }
+    return pass;
+}
+
+function formatBytes(bytes, decimals) {
+    if (bytes == 0) return '0 Byte';
+    var k = 1000;
+    var dm = decimals + 1 || 3;
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
 /* Utility: pageInit */
 function pageInit(user) {
-    // User Menu Info 
+    // User Menu Info
     $("#profileUsername").html((user.email).toString());
+    setupLogoutProtocol("logoutBtn", database, auth);
 }
+
