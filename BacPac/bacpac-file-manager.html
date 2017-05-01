@@ -18,8 +18,11 @@
 	<link href="assets/css/bootstrap.min.css" rel="stylesheet">
 	<link href="assets/css/style.min.css" rel="stylesheet">
 	<link href="assets/css/retina.min.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="assets/css/bacpac-file-manager.css">
 	<!-- end: CSS -->
 	
+	<!-- Google Firebase Setup -->
+	<script src="https://www.gstatic.com/firebasejs/3.7.1/firebase.js"></script>
 
 	<!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
 	<!--[if lt IE 9]>
@@ -337,7 +340,7 @@
 							<!-- User Greeting -->
 							<div class="user">
 								<span class="hello">User:</span>
-								<span class="name">Some Username</span>
+								<span id="profileUsername" class="name">Some Username</span>
 							</div>
 						</a>
 						<ul class="dropdown-menu">
@@ -363,7 +366,7 @@
 								</a>
 							</li>
 							<li>
-								<a href="bacpac-login.html">
+								<a id="logoutBtn" href="bacpac-login.html">
 									<i class="fa fa-off"></i>
 									Logout
 								</a>
@@ -393,7 +396,7 @@
 					<ul class="nav nav-tabs nav-stacked main-menu">
 						<!-- Tab 1: Dashboard -->
 						<li>
-							<a href="bacpac.html">
+							<a class="bacpacTab" href="bacpac.html">
 								<i class="fa fa-bar-chart-o"></i>
 								<span class="hidden-sm"> Dashboard</span>
 							</a>
@@ -401,7 +404,7 @@
 
 						<!-- Tab 2: File Manager -->
 						<li>
-							<a href="bacpac-file-manager.html">
+							<a class="bacpacTab" href="bacpac-file-manager.html">
 								<i class="fa fa-folder-open"></i>
 								<span class="hidden-sm"> Files</span>
 							</a>
@@ -409,7 +412,7 @@
 
 						<!-- Tab 3: Uploader -->
 						<li>
-							<a href="bacpac-upload.html">
+							<a class="bacpacTab" href="bacpac-upload.html">
 								<i class="fa fa-cloud-upload"></i>
 								<span class="hidden-sm"> Upload</span>
 							</a>
@@ -417,7 +420,7 @@
 
 						<!-- Tab 4: Sharing Status -->
 						<li>
-							<a href="bacpac-share-status.html">
+							<a class="bacpacTab" href="bacpac-share-status.html">
 								<i class="fa fa-bar-chart-o"></i>
 								<span class="hidden-sm"> Share Status</span>
 							</a>
@@ -425,7 +428,7 @@
 
 						<!-- Tab 5: Recent -->
 						<li>
-							<a href="bacpac-recent.html">
+							<a class="bacpacTab" href="bacpac-recent.html">
 								<i class="fa fa-exclamation"></i>
 								<span class="hidden-sm"> Recent</span>
 							</a>
@@ -433,7 +436,7 @@
 
 						<!-- Tab 6: Trash -->
 						<li>
-							<a href="">
+							<a class="bacpacTab" href="bacpac-trash.html">
 								<i class="fa fa-trash-o"></i>
 								<span class="hidden-sm"> Trash</span>
 							</a>
@@ -464,12 +467,37 @@
 									<!-- <a href="file-manager.html#" class="btn-close"><i class="fa fa-times"></i></a> -->
 								</div>
 							</div>
-							<div class="box-content">
-								<div class="alert alert-info">
+							<div class="box-content clearfix">
+								<!-- <div class="alert alert-info">
 									<button type="button" class="close" data-dismiss="alert">×</button>
-									<i class="fa fa-info-sign"></i> As its a demo, you currently have read-only permission, in your server you may do everything like, upload or delete. It will work on a server only.
+									<i class="fa fa-info-sign"></i> Instructions:
+								</div> -->
+
+								<ol id="pathTracker" class="breadcrumb">
+									<li><a href="#">Home</a></li>
+								</ol>
+
+								<!-- start: File Manager -->
+								<div id="fileManager" class="container-fluid">
+									<div class="row">
+										<!-- <div id="fileManagerFoldersPane" class="col-md-3 well box-content clearfix list-group"> -->
+										<div class="col-md-3 container-fluid">
+											<div class="row panel panel-info">
+												<div class="panel-header"><span class="label label-info" style="display:block">Navigator</span></div>
+												<div id="fileManagerFoldersPane" class="panel-body">
+
+												</div>
+											</div>
+										</div>
+										<div class=" container-fluid">
+											<div id="fileManagerContent" class="row well" style="overflow: scroll">
+
+											</div>
+										</div>
+									</div>
 								</div>
-								<div class="file-manager"></div>
+								<!-- end: File Manager -->
+
 							</div>
 						</div>
 					</div><!--/col-->
@@ -501,6 +529,50 @@
 		</div><!-- /.modal-dialog -->
 	</div><!-- /.modal -->
 	<!-- end: Modal -->
+
+	<!-- start: Download Modal -->
+	<div class="modal fade" id="downloadModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					File Preview
+				</div>
+				<div id="downloadModalBody" class="modal-body">
+					<iframe id="downloadModalPreview" style="display: none" src="">
+
+					</iframe>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button id="downloadModalDownloadButton" type="button" class="btn btn-primary">Download</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Download Modal -->
+
+	<!-- start: Properties Modal -->
+	<div class="modal fade" id="propertiesModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					File Properites
+				</div>
+				<div id="propertiesModalBody" class="modal-body">
+					<div id="propertiesModalFileName"></div>
+					<div id="propertiesModalFileType"></div>
+					<div id="propertiesModalFileSize"></div>
+					<div id="propertiesModalFileCreationDate"></div>
+					<div id="propertiesModalFileLastUpdate"></div>
+					<div id="propertiesModalFileContentType"></div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Properties Modal -->
 	
 	<div class="clearfix"></div>
 	
@@ -546,13 +618,14 @@
 
 		<!-- page scripts -->
 		<script src="assets/js/jquery-ui-1.10.3.custom.min.js"></script>
-		<script src="assets/js/jquery.elfinder.min.js"></script>
-		
+		<script src="assets/js/jquery.nestable.min.js"></script>
+
 		<!-- theme scripts -->
 		<script src="assets/js/custom.min.js"></script>
 		<script src="assets/js/core.min.js"></script>
 		
 		<!-- inline scripts related to this page -->
+		<script type="text/javascript" src="assets/js/common/utility.js"></script>
 		<script src="assets/js/pages/bacpac-file-manager.js"></script>	
 	<!-- end: JavaScript-->
 </body>
