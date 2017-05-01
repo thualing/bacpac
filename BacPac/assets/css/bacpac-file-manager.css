@@ -10,3 +10,13 @@
 	font-style: oblique;
 	color: white;
 }
+
+.fileOptionMenu {
+	font-style: oblique;
+	/*float: left;*/
+	text-align: center;
+}
+
+.fileOptionMenuBtn {
+	font-style: none;
+}

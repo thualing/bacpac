@@ -489,8 +489,9 @@
 												</div>
 											</div>
 										</div>
-										<div class="col-md-9 container-fluid">
-											<div id="fileManagerContent" class="row well" style="overflow: auto">
+										<div class=" container-fluid">
+											<div id="fileManagerContent" class="row well" style="overflow: scroll">
+
 											</div>
 										</div>
 									</div>
@@ -528,6 +529,50 @@
 		</div><!-- /.modal-dialog -->
 	</div><!-- /.modal -->
 	<!-- end: Modal -->
+
+	<!-- start: Download Modal -->
+	<div class="modal fade" id="downloadModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					File Preview
+				</div>
+				<div id="downloadModalBody" class="modal-body">
+					<iframe id="downloadModalPreview" style="display: none" src="">
+
+					</iframe>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button id="downloadModalDownloadButton" type="button" class="btn btn-primary">Download</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Download Modal -->
+
+	<!-- start: Properties Modal -->
+	<div class="modal fade" id="propertiesModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					File Properites
+				</div>
+				<div id="propertiesModalBody" class="modal-body">
+					<div id="propertiesModalFileName"></div>
+					<div id="propertiesModalFileType"></div>
+					<div id="propertiesModalFileSize"></div>
+					<div id="propertiesModalFileCreationDate"></div>
+					<div id="propertiesModalFileLastUpdate"></div>
+					<div id="propertiesModalFileContentType"></div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Properties Modal -->
 	
 	<div class="clearfix"></div>
 	
