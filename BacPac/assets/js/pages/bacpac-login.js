@@ -236,6 +236,9 @@ Don't use strict mode; there are possible browser compatilibity issues
 				prevPath: "/"
 			}
 		};
+		initRefs["roster/" + user.email.replace(/\.+/gi, "%2E")] = {	// init user's roster entry
+			uid: user.uid
+		}
 
 		// Init a user
 		database.ref().update(initRefs).then(function(){
