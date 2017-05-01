@@ -141,7 +141,7 @@ function fireBaseImageUpload(parameters, callBackData) {
     });
 
     var dBPath = encodeURIComponent(fullPath).replace('.', '%2E');
-    var dBFileName = encodeURIComponent(n).replace('.', '%2E')
+    var dBFileName = encodeURIComponent(n).replace('.', '%2E');
     writeUploadToDB(user.data.uid, dBFileName, dBPath);
 }
 
