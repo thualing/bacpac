@@ -18,14 +18,14 @@
     var storageRef = firebase.storage();
   
     var user = { data: "" };
-   
+   // var otheruser = {};
     var uid = getParameterByName("uid");
     var auth = firebase.auth();
     //var user = null;
     var database = firebase.database(app);
-    readSessionData(user, getParameterByName("uid"), database, rsdCallback)//userId=getParameterByName("uid")
-   
-    var name;
+   readSessionData(user, getParameterByName("uid"), database, rsdCallback)//userId=getParameterByName("uid")
+  // readshareData(otheruser, getParameterByName("uid"), database, rsdCallback);
+   // var name;
    // var metadata = { 'contentType': file.type };
    // var fullPath = path + '/' + file.name;
     
@@ -64,15 +64,7 @@
         })*/
         //var newPostKey = firebase.database().ref(sKey).push().key;
 
-      //  var thead = document.getElementsByTagName('thead')[0];
-      /*  ref.on("child_added", function (child) {
-            console.log(child.key + ': ' + child.val());
-            var tr = document.createElement('tr');
-            var th = document.createElement('th');
-            th.innerText = child.val().email + " --- " + JSON.stringify(child.val());
-            tr.appendChild(th);
-            thead.appendChild(tr);
-        });*/
+     
         $("#logoutBtn").on("click", function () {
             auth.signOut().then(function () {
                 console.log("Signing Out");
@@ -84,21 +76,21 @@
         function rsdCallback(data) {
             if (!data) {
                 console.log("Error:rsdCallback: invalid session");
-                window.location = "bacpac-login.html";
+               // window.location = "bacpac-login.html";
                 return false;
             };
             switch (data.uid) {
                 case null: {
                     // not found
                     console.log("Error: User ID not found");
-                    window.location = "bacpac-login.html";
+                   // window.location = "bacpac-login.html";
                     return false;
                     break;
                 }
                 case '': {
                     // invalid found
                     console.log("Error: User ID not found");
-                    window.location = "bacpac-login.html";
+                  //  window.location = "bacpac-login.html";
                     return false;
                     break;
                 }
@@ -112,31 +104,93 @@
                 }
             }
         }
-
+     
+       
         function sharing()
-        {//uid/fromOtherUsers/someOtherUser_Uid
-            // var sharedwme = 
+        {
+          
+            var tr = document.createElement('tr');
             var thead = document.getElementsByTagName('thead')[0];
-            database.ref("/shared/uid/fromOtherUsers/someOtherUser_Uid/aFileOtherUserOwns_fileName0").once("value").then(function (snapshot) {
-                user.data = snapshot.val();
-                initTabs(snapshot.val());
-                var tr = document.createElement('tr');
-                var td = document.createElement('td');
+            database.ref("/shared/uid/fromOtherUsers/").once("value").then(function (snapshot) {
+                var info = snapshot.val();
+                var UID = Object.keys(info);
                 var td2 = document.createElement('td');
+                database.ref("/shared/uid/fromOtherUsers/" + UID + "/aFileOtherUserOwns_fileName0").once("value").then(function (snapshot) {
+                    var info2 = snapshot.val();
+
+                    //database.ref("roster/")once("value").then(function (snapshot){ var info3 = snapshot.val(); var email = Object.keys(info);...}
+                    //"/roster" + email + "/uid" UID
+
+
+                    //     if (snapshot.val() == "fileName0.fileExt")//if no file has been shared
+                    //     return;
+                    initTabs(user);
+                    //    var tr = document.createElement('tr');
+                    // var td = document.createElement('td');
+                 //   var td2 = document.createElement('td');
+                    //    var userdata = snapshot.val().replace("\"", "");
+                    //snapshot.val()=filename w/ extension
+                    // var td = document.createElement('td class="center"');
+                    //  th.innerText = snapshot.val().data + " --- " + JSON.stringify(snapshot.val());
+                    console.log(Object.keys(info2));
+                    td2.innerText = JSON.stringify(info2)//file name
+                    //  td.innerText = Object.keys(info);
+                //    tr.appendChild(td2);
+                    //    tr.appendChild(td);
+               //     thead.appendChild(tr);
+                    console.log("Shared file: " + JSON.stringify(snapshot.val())); // debug
+                    // initTabs(snapshot.val());
+
+                })
+                tr.appendChild(td2);
+                thead.appendChild(tr);
+              //  if (Object.keys(info) == "someOtherUser_Uid")//if no file has been shared
+                //       return;
+               initTabs(user);
+              //  var tr = document.createElement('tr');
+                var td = document.createElement('td');
+              //  var td2 = document.createElement('td');
             //    var userdata = snapshot.val().replace("\"", "");
-               
+               //snapshot.val()=filename w/ extension
                // var td = document.createElement('td class="center"');
                 //  th.innerText = snapshot.val().data + " --- " + JSON.stringify(snapshot.val());
-                td2.innerText = JSON.stringify(snapshot.val())//file name?
-                td.innerText = "hi";
+                console.log(Object.keys(info));
+             
+              //  td2.innerText = JSON.stringify(info)//file name?
+                td.innerText = UID;//otheruserid
                 // td.innerText = "123";
-                tr.appendChild(td2);
+                // tr.appendChild(td2);
+            
                 tr.appendChild(td);
-                thead.appendChild(tr);
-                 console.log("Shared file: " + JSON.stringify(snapshot.val())); // debug
+              //  thead.appendChild(tr);
+             //    console.log("Shared file: " + JSON.stringify(snapshot.val())); // debug
                // initTabs(snapshot.val());
-               
+             
+                
             })
+           /* database.ref("/shared/uid/fromOtherUsers/someOtherUser_Uid/aFileOtherUserOwns_fileName0").once("value").then(function (snapshot) {
+                var info = snapshot.val();
+         //     if (snapshot.val() == "fileName0.fileExt")//if no file has been shared
+             //     return;
+                initTabs(user);
+            //    var tr = document.createElement('tr');
+               // var td = document.createElement('td');
+                var td2 = document.createElement('td');
+                //    var userdata = snapshot.val().replace("\"", "");
+                //snapshot.val()=filename w/ extension
+                // var td = document.createElement('td class="center"');
+                //  th.innerText = snapshot.val().data + " --- " + JSON.stringify(snapshot.val());
+                console.log(Object.keys(info));
+                td2.innerText = JSON.stringify(info)//file name
+              //  td.innerText = Object.keys(info);
+                tr.appendChild(td2);
+            //    tr.appendChild(td);
+                thead.appendChild(tr);
+                console.log("Shared file: " + JSON.stringify(snapshot.val())); // debug
+                // initTabs(snapshot.val());
+            
+            })*/
+            thead.appendChild(tr);
         }
 
         function applyProfileData(elemID, data) {
@@ -150,34 +204,8 @@
             $("#" + elemID).html(data);
             return true;
         }
-        function listDirectoryContent(uid, fullPath, dbRef, callback) {
-            if (!uid || !fullPath || !dbRef || !callback) {
-                console.log("Error:listDirectoryContent: invalid parameter(s)");
-                return false;
-            } else if (typeof uid !== "string" || typeof fullPath !== "string") {
-                console.log("Error:listDirectoryContent: type error(s)");
-                return false;
-            } else if (typeof callback !== "function") {
-                console.log("Error:listDirectoryContent: callback is not a function!");
-                return false;
-            }
-            dbRef.ref("/folder/" + uid + fullPath).once("value").then(function (snapshot) {
-                callback(snapshot.val());
-            }).catch(function (error) {
-                console.log(error);
-            });
-
-            return true;
-        }
-
-        function updateFolderPane(data) {
-            if (!data) {
-                console.log("Error:updateFolderPane: invalid data");
-                return false;
-            }
-            console.log("Updating navigation tree: " + JSON.stringify(data));
-            return true;
-        }
+       
+       
         function main() {
             console.log("Running Main Routine...");
             // /* "p" Key Default Action Override */
@@ -190,7 +218,7 @@
             // });
 
             /* Init the user's front end file manager */
-            listDirectoryContent(user.data.uid, "/", database, updateFolderPane);
+          
 
             /* Apply proper logout protocol to the logout button */
             setupLogoutProtocol("logoutBtn", database, auth);
