@@ -1,22 +1,35 @@
 /* BacPac File Manager Custom CSS Styles*/
 
+/* File Manager Unit Elements */
 .fileElement {
 	font-style: italic;
 	color: black;
 	font-size: x-small;
 }
-
 .folderElement {
 	font-style: oblique;
 	color: white;
 }
-
 .fileOptionMenu {
 	font-style: oblique;
 	/*float: left;*/
 	text-align: center;
 }
-
 .fileOptionMenuBtn {
 	font-style: none;
+}
+
+/* Share Modal Styles */
+.sharingModalContent {
+	background-color: #999999;
+}
+.sharingModalContentBody {
+	background-color: #808080;
+}
+.sharingModalSearchBar {
+	background-color: #404040;
+	width: 100%;
+}
+.sharingModalUserQueueButton {
+	width: 100%
 }
