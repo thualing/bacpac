@@ -48,7 +48,11 @@ $(document).ready(function () {
 		}
 	}
 
-
+	// Sharing Status Variables
+	var sharingList = {};
+	var blackList = {};
+	var sharingHistory = {};
+	var fileToShare = "";
 
 
 
@@ -247,11 +251,14 @@ $(document).ready(function () {
 
 /* File Manager Utility: promptShareFromElement
 		Description:
-			Prompts the sharing/unsharing of the file represented by the specified element
+			Prompts the sharing/unsharing of the file you own, represented by the specified element
 			Applies content to the sharing modal and launches the modal
 		Expects:
 			(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
 			"database" in it.
+			The object "sharingList" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+			The object "sharingHistory" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+			The variable "fileToShare" (case-sensitive) must be initialized as an empty string within this file in global scope (and above any calls to this function)
 		Parameters:
 			string elemID - the id of the file element that was clicked
 			string userID - the current user's uid
@@ -261,8 +268,248 @@ $(document).ready(function () {
 	function promptShareFromElement(elemID, userID) {
 		var fileName = $("#" + elemID + "filename").html();
 		console.log("Sharing " + fileName + " from " + elemID + " for user " + userID);	// debug
+		fileToShare = fileName;	// set the name of current file to be shared
 
+		// Setup Current Sharing Info for the current file (i.e. if the file is currently shared with others, the UI needs to reflect that)
+		database.ref("/shared/" + userID + "/withOtherUsers/" + encodeURIComponent(fileName).replace(/\./g, '%2E')).once("value").then(function(snapshot){
+			var listOfShareUsers = snapshot.val();		// snapshot.val() returns the JSON object of key:value pairs consisting of "uid":"unencodedEmailOfUserWithThatUid"
+			if (listOfShareUsers !== null) {	// if the selected file IS CURRENTLY shared with others
+				var arrayOfUids = Object.keys(listOfShareUsers);	// pull the uids of users who can access this file; store them in an array of strings
 
+				console.log("Alert:promptShareFromElement: The file " + fileToShare + " is already shared with others!");	// debug
+				arrayOfUids.forEach(function(currentUid, currentIndex, returnedArray) {
+					addUserToShare(elemID, userID, listOfShareUsers[currentUid], currentUid, true);	// populate the share queue with the emails/usernames of people who are already shared this file; also record history on who was previously shared this file (for use with removing sharing rights of others)
+					console.log(" Previously shared with: " + JSON.stringify(sharingHistory));
+				});
+			} else {
+				console.log("Alert:promptShareFromElement: The file " + fileToShare + " is not shared with anyone right now...");	// debug
+			}
+		});
+
+		// Setup Sharing Modal Search Feature
+		$("#sharingModalUserSearchBar").off("input");	// remove previous input event listener
+		$("#sharingModalUserSearchBar").on("input", function(){	// add a listener that continuously searches the BacPac user base for the desired user
+			var searchTerm = encodeURIComponent($("#sharingModalUserSearchBar").val()).replace(/\./g, '%2E').replace(/%40/g, '@');
+			// console.log("Searching for " + searchTerm);	// debug
+			if (searchTerm === "" || searchTerm === "0") {	// if search bar is empty, clear user display
+				insertIntoElement("sharingModalUserDisplay", "<p style='color:white; font-style:oblique;'>No Users Found</p>");
+				return;
+			}
+
+			// This requests a new ref each time input is updated; inefficient, but simple enough for now
+			database.ref("/roster/").once("value").then(function(snapshot){
+				// Acquire the user emails of all registered bacpac users in an array
+				var usernames = Object.keys(snapshot.val());
+				var resultHTML = "";
+				var matchCount = 0;
+
+				// Sift through the usernames for partial/complete matches to searchTerm and place partial/complete matches into the user display
+				usernames.forEach(function(uname, unameIndex, returnedArray){
+					if (uname.includes(searchTerm)) {	// if there's a match, place it in the UI in the following button template:
+						matchCount++;
+						resultHTML += "\
+						<button class='btn btn-info' style='width:100%' onclick='addUserToShare(" + '"' + elemID + '",' + '"' + userID + '",' + '"' + decodeURIComponent(uname) + '",' + '"' + snapshot.val()[uname]["uid"] + '"' + ")'>\
+							" + decodeURIComponent(uname) + "\
+						</button>";
+					}
+
+					// if this is the last element in the username array, output resultHTML to the UI
+					if (unameIndex === returnedArray.length - 1) {
+						switch(resultHTML){	// if no matches were found
+							case "": {
+								console.log("User not found...");
+								resultHTML = "<p style='color:white; font-style:oblique;'>No Users Found</p>";
+								break;
+							}
+							default: {
+								console.log("There are " + matchCount + " matches");
+								break;
+							}
+						}
+						insertIntoElement("sharingModalUserDisplay", resultHTML);
+					}
+				});
+			});
+		});
+		$("#sharingModalConfirm").off("click");	// remove the click event of the Confirm button
+		$("#sharingModalConfirm").on("click", function(){
+			updateFileShareStatus(userID);
+		});	// add a listener for a click to confirm sharing
+		$("#sharingModalCancel").off("click");	// remove the click event of the Cancel button
+		$("#sharingModalCancel").on("click", cancelShareFromElement);	// add a listener for a click to cancel sharing
+		$("#sharingModal").modal("show");
+	}
+
+/* File Manager Utility: cancelShareFromElement
+		Description:
+			Performs the necessary cleanup when cancelling the share function
+		Expects:
+			The object "sharingList" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+			The object "sharingHistory" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+			The object "blackList" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+			The variable "fileToShare" (case-sensitive) must be initialized as an empty string within this file in global scope (and above any calls to this function)
+		Parameters:
+			N/A
+		Returns:
+			?
+*/
+	function cancelShareFromElement() {
+		console.log("Alert:cancelShareFromElement: Cancelling Sharing...");
+		$("#sharingModalUserSearchBar").val("");	// clear the search bar text
+		$("#sharingModalUserDisplay").html("<p style='color:white; font-style:oblique;'>No Users Found</p>");	// clear the display html
+		$("#sharingModalShareList").html("");	// clear UI share list
+		sharingList = {};	// clear share queue
+		sharingHistory = {};	// clear record of who the file was prev. shared with
+		blackList = {};	// clear blackList
+		fileToShare = "";	// clear the name of the file to share
+		console.log(sharingList);	// debug
+	}
+
+/* File Manager Utility: addUserToShare
+		Description:
+			Adds a user to a UI-implemented list of users to share a file with.
+		Expects:
+			(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+			"database" in it.
+			The userName parameter is a literal email, no the URIencoded version (i.e. not "someuser@gmail%2Ecom", but "someuser@gmail.com")
+			The object "sharingList" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+			The object "sharingHistory" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+		Parameters:
+			string elemID - the id of the file element that was clicked
+			string userID - the current user's uid
+			string userName - selected user's email/username
+			string shareID - the uid of the user to share with
+			(optional) bool shouldRecord - specifies if the shareHistory must also be updated to reflect the previous list of people who were shared the file in question
+		Returns:
+			N/A
+*/
+	function addUserToShare(elemID, userID, userName, shareID, shouldRecord) {
+		console.log("E:" + elemID + " U:" + userID + " '" + userName + "'" +" S:" + shareID);	// debug
+
+		// Make sure that the selected user is not already in the share queue
+		if (typeof sharingList[shareID] !== "undefined"){
+			console.log("Alert:addUserToShare: User '" + shareID + "' is already in queue!");
+			return;
+		}
+
+		// Make sure that if they are in the blackList, they are removed from it (i.e. in case of a removal followed by an add to the share queue)
+		if (blackList[shareID]) {
+			delete blackList[shareID];
+		}
+
+		// If not, then add to the current running list of people to share to (instantiate a new javascript object member)
+		sharingList[shareID] = userName;
+		if (shouldRecord) sharingHistory = sharingList;	// this is for recording who to "unshare" from; enables us to share/unshare files using just THIS function (i.e. no need to separate it to a "share" function and "unshare" function)
+		console.log(sharingList);	// debug
+
+		// Add html elements
+		var currentShareListHtml = $("#sharingModalShareList").html();	// get the current contents of the share queue
+		var additionalUserElement = "<button id='share" + shareID + "'' class='btn btn-danger sharingModalUserQueueButton' onclick='removeUserFromShare(" + '"' + shareID + '"' + ")'>" + userName + "<span class='glyphicon glyphicon-remove'></span></button>";
+		insertIntoElement("sharingModalShareList", currentShareListHtml + additionalUserElement);
+	}
+
+/* File Manager Utility: removeUserFromShare
+		Description:
+			Removes a user from the UI-implemented list of users to share with
+		Expects:
+			The object "sharingList" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+			The object "blackList" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+		Parameters:
+			string shareID - the uid of the user to share with
+		Returns:
+			N/A
+*/
+	function removeUserFromShare(shareID) {
+		console.log("Alert:removeUserFromShare: User '" + shareID + "' removed from queue!");	// debug
+
+		$("#share" + shareID).remove();	// remove the element from the DOM
+		blackList[shareID] = sharingList[shareID];	// add the removed user to the blackList (the queue for "unsharing")
+		delete sharingList[shareID];	// remove that key:value pair from the sharingList
+		console.log(sharingList);	// debug
+	}
+
+/* File Manager Utility: updateFileShareStatus
+		Description:
+			Invokes a sharing action
+			Writes info to the database updating the sharing status of the selected file
+			Note: This function overwrites the database's share status entry for this file; removing users from the queue will effectively be similar to directly unsharing a file with those users 
+		Expects:
+			(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+			"database" in it, and a firebase.storage(object) named "storage".
+			The variable "fileToShare" (case-sensitive) must be initialized as an empty string within this file in global scope (and above any calls to this function)
+			The object "sharingList" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+			The object "sharingHistory" (case-sensitive) must be initialized as an empty object within this file in global scope (and above any calls to this function)
+		Parameters:
+			string userID - the current user's uid
+		Returns:
+			N/A
+*/
+	function updateFileShareStatus (userID) {
+		// acquire temp copy of the blackList and fileToShare (in case the additive callback finishes first)
+		var tempBl = blackList;
+		var tempFTS = fileToShare;
+
+		// acquire the uids of the users who are shared this file; store it in an array
+		var arrayOfUids = Object.keys(sharingList);
+
+		// // acquire the uids of the users previously shared this file; store it in an array
+		// var arrayOfPrevUids = Object.keys(sharingHistory);
+
+		// acquire the uids of the users who are now blacklisted (i.e. unshared)
+		var arrayOfBlackListedUids = Object.keys(tempBl);
+
+		console.log("Alert:updateFileShareStatus: Sharing '" + tempFTS + "' with " + JSON.stringify(sharingList) + "... \nUnsharing it with " + JSON.stringify(tempBl));	// debug
+
+		// Add a record into the current user's withOtherUsers section to record that the current user's file has been shared with others
+		database.ref("/shared/" + userID + "/withOtherUsers/" + fbdbEncode(tempFTS)).set(sharingList).then(function(){
+			console.log("Alert:updateFileShareStatus: Your sharing records have been successfully updated!");	// debug
+
+			// NEGATIVE: Remove records from the "unshared" users's fromOtherUsers sections to reflect that this file is no longer shared with them
+			arrayOfBlackListedUids.forEach(function (currentBLUid, currentIndex, returnedArray) {
+				database.ref("/shared/" + currentBLUid + "/fromOtherUsers/" + userID + "/" + fbdbEncode(tempFTS)).remove().then(function () {
+					console.log("Alert:updateFileShareStatus: Unshared users updated!");
+					$("#sharingModalCancel").click();	// close the Sharing Modal
+					return;
+				}).catch(function (error) {
+					console.log("Error:updateFileShareStatus: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");
+					$("#sharingModalCancel").click();	// close the Sharing Modal
+				});
+			});
+
+			// ADDITIVE: Add records into the shared users' fromOtherUsers sections to reflect that this file is shared with them
+			arrayOfUids.forEach(function (currentUidOfOtherUser, currentIndex, returnedArray) {
+				// For each user being shared this file, record that the current user is sharing it with them
+				database.ref("/shared/" + currentUidOfOtherUser + "/fromOtherUsers/" + userID + "/" + fbdbEncode(tempFTS)).set(tempFTS).then(function () {
+					console.log("Alert:updateFileShareStatus: File was successfully shared!");
+					$("#sharingModalCancel").click();	// close the Sharing Modal
+					return;
+				}).catch(function (error) {
+					console.log("Error:updateFileShareStatus: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");
+					$("#sharingModalCancel").click();	// close the Sharing Modal
+				});
+			});
+
+			return;
+		}).catch(function (error) {
+			console.log("Error:updateFileShareStatus: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");
+			$("#sharingModalCancel").click();	// close the Sharing Modal
+			return;
+		});
+	}
+
+/* Utility: fbdbEncode
+		Description:
+			Encodes the given string so that it can be registered successfully as a key to the Google Firebase Realtime Database
+			Currently encodes ".", in addition to characters encoded by encodeURIComponent
+		Expects:
+			N/A
+		Parameters:
+			string str - the string to encode
+		Returns:
+			string result - the encoded string
+*/
+	function fbdbEncode(str) {
+		return encodeURIComponent(str).replace(/\./g, '%2E');
 	}
 
 /* File Manager Utility: promptPropertiesFromElement
@@ -291,7 +538,7 @@ $(document).ready(function () {
 			$("#propertiesModalFileContentType").html("<strong>Content Type: </strong>" + metadata.contentType);
 			$("#propertiesModal").modal("show");
 		}).catch(function(error) {
-			console.log("Error:promptPropertiesFromElement: Internal Error Occurred! [" + error.code + "(" + error.message + ")" + "]");
+			console.log("Error:promptPropertiesFromElement: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");
 		});
 	}
 
@@ -338,7 +585,7 @@ $(document).ready(function () {
 				callback("unknown", key);
 			}
 		}).catch(function(error){
-			console.log("Error:distinguishEntity: Internal Error Occurred! [" + error + "]");
+			console.log("Error:distinguishEntity: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");
 			callback("error", key);
 		});
 		return true;
@@ -431,7 +678,7 @@ $(document).ready(function () {
 		dbRef.ref("/folder/" + uid + fullPath).once("value").then(function(snapshot){
 			callback(snapshot.val());
 		}).catch(function(error){
-			console.log(error);
+			console.log("Error:listDirectoryContent: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");
 		});
 
 		return true;
