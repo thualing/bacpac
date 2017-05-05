@@ -91,43 +91,57 @@ $("#uploadModal").on("hidden.bs.modal", function(e) {
 });
     
 function handleFileUpload(files, obj) {
+
     var fileNames = "";
     var successFiles = "";
+    var failFiles = "";
+    var currentFileName = "";
+
     for (var i = 0; i < files.length; i++) {
         var fd = new FormData();
         fd.append('file', files[i]);
     
-        var currentFileName = files[i].name;
+        currentFileName = files[i].name;
         fileNames += "<li>" + currentFileName + "</li>";
 
         //console.log(files[i]);
-        console.log(files[i].name);
+        //console.log("Current File: " + currentFileName);
 
-        fireBaseImageUpload({
-            'file': files[i],
-            'path': "files/" + uid //Storage Bucket path to store files.
-        }, function (data) {
-            //console.log(data);
-            if (!data.error) {
-                if (data.progress) {
-                    // progress update to view here
-                }
-                if (data.downloadURL) {
-                    // update done
-                    // download URL here "data.downloadURL"
-                    successFiles += "<li>" + currentFileName + "</li>";
-                    $("#filesUploadModalBody").html("<span>Files Uploaded:</span>" + "<ul>" + fileNames + "</ul>");
-                    $("#successUploadModalBody").html("<span>Successfully Uploaded:</span>" + "<ul>" + successFiles + "</ul>");
-                    $("#uploadModal").modal('show');
-                    
-                }
-            } else {
-                console.log(data.error + ' Firebase image upload error');
-                $("#failUploadModalBody").html("<span>Unsuccessful Uploads:</span>" + "<ul><li>" +currentFileName + " Reason: <strong>" + data.error +"</strong></li></ul>");
-                $("#uploadModal").modal('show');
-            }
-            
-        });
+        if(files[i].size > 5 * 1024 * 1024 )
+        {
+        	failFiles += "<li>" + currentFileName + " Reason: <strong>" + "File size too large" +"</strong></li>";
+        }
+        else
+        {
+	        fireBaseImageUpload({
+	            'file': files[i],
+	            'path': "files/" + uid //Storage Bucket path to store files.
+	        }, function (data) {
+	            //console.log(data);
+	            if (!data.error) {
+	                if (data.progress) {
+	                    // progress update to view here
+	                }
+	                if (data.downloadURL) {
+	                    // update done
+	                    // download URL here "data.downloadURL"
+	                }
+	            } 
+	            else 
+	            {
+	                console.log(data.error + ' Firebase image upload error');
+	            }
+	        });
+	        successFiles += "<li>" + currentFileName + "</li>";
+    	}
+
+    	//console.log("SuccessFiles: " +successFiles);
+    	$("#filesUploadModalBody").html("<span>Files:</span>" + "<ul>" + fileNames + "</ul>");
+    	if(successFiles != "")
+	    	$("#successUploadModalBody").html("<span>Successfully Uploaded:</span>" + "<ul>" + successFiles + "</ul>");
+        if(failFiles != "")
+        	$("#failUploadModalBody").html("<span>Unsuccessful Uploads:</span>" + "<ul>" + failFiles + "</ul>");
+        $("#uploadModal").modal('show');
     }
 };
     
@@ -148,7 +162,7 @@ function fireBaseImageUpload(parameters, callBackData) {
     var fileType = file.type;
     var n = file.name;
 
-    console.log(file.size);
+    //console.log(file.size);
     // generate random string to identify each upload instance
     uploadName = generateRandomString(12); //(location function below)
 
@@ -161,10 +175,10 @@ function fireBaseImageUpload(parameters, callBackData) {
 
     plainFileName += arr.slice(-1)[0];
     var fullPath = path + '/' + plainFileName; // + arr.slice(-1)[0];
-    //var fullPath = path + '/' + file.name;
+    //var fullPath2 = path + '/' + file.name;
 
-    console.log(plainFileName);
-    console.log(fullPath);
+    //console.log(plainFileName);
+    //console.log(fullPath);
     //console.log(fullPath2);
 
     var uploadFile = storageRef.child(fullPath).put(file, metaData);
@@ -173,30 +187,27 @@ function fireBaseImageUpload(parameters, callBackData) {
     callBackData({id: uploadName, fileSize: fileSize, fileType: fileType, fileName: n});
 
     uploadFile.on('state_changed', function (snapshot) {
-        if(file.size < 5 * 1024 * 1024) {
-            var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            progress = Math.floor(progress);
-            callBackData({
-                progress: progress,
-                element: uploadName,
-                fileSize: fileSize,
-                fileType: fileType,
-                fileName: n});
-            var dBPath = fullPath;
-            //var dBFileName = arr[0] + "%2E" + arr.slice(-1)[0];
 
-            //Replaces "." "#" "$" "[" "]" with their respective ASCII codes
-            var dBFileName = encodeURI(plainFileName).replace(/\./g, '%2E').replace(/\#/g, '%23').replace(/\$/g,'%24').replace(/\[/g,'%5B').replace(/\]/g,'%5D');
-            console.log(uid);
-            writeUploadToDB(uid, dBFileName, dBPath);
-        }
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        progress = Math.floor(progress);
+        callBackData({
+            progress: progress,
+            element: uploadName,
+            fileSize: fileSize,
+            fileType: fileType,
+            fileName: n});
+        var dBPath = fullPath;
+        //var dBFileName = arr[0] + "%2E" + arr.slice(-1)[0];
+
+        //Replaces "." "#" "$" "[" "]" with their respective ASCII codes
+        var dBFileName = encodeURI(plainFileName).replace(/\./g, '%2E').replace(/\#/g, '%23').replace(/\$/g,'%24').replace(/\[/g,'%5B').replace(/\]/g,'%5D');
+        console.log(uid);
+        writeUploadToDB(uid, dBFileName, dBPath);
+
     }, function (error) {
-        if(file.size > 5 * 1024 * 1024) {
-            callBackData({error: "File too large."});
-        }
-        else {
+
             callBackData({error: error});
-        }
+
     }, function () {
         var downloadURL = uploadFile.snapshot.downloadURL;
         callBackData({
@@ -210,6 +221,8 @@ function fireBaseImageUpload(parameters, callBackData) {
 
 /* Creates a record of file in DB*/
 function writeUploadToDB(userId, fileName, filePath) {
+	var decodedFileName = decodeURI(fileName).replace(/\%2E/g, '.').replace(/\%23/g, '#').replace(/\%24/g,'$').replace(/\%5B/g,'[').replace(/\%5D/g,']');
+
     database.ref("fileName/" + userId +"/" + fileName).set({
         'path' : filePath
     });
@@ -217,9 +230,10 @@ function writeUploadToDB(userId, fileName, filePath) {
         '0' : 0
     });
     database.ref("folder/" + userId + "/" + fileName).set({
-        'name' : fileName,
+        'name' : decodedFileName,
         'path' : filePath
     });
+    console.log("Decoded File Name: " + decodedFileName);
 }
 
 function formatBytes(bytes, decimals) {
@@ -246,45 +260,25 @@ $("#logoutBtn").on("click", function(){
     });
 });
 
-
-/* Utility: readSessionData */
-/*function readSessionData(userId) {
-    database.ref("/sessions/" + userId).once("value").then( function(snapshot){
-        user = snapshot.val();
-        console.log("Current User: " + JSON.stringify(user));
-        pageInit(user);
-    });
-}*/
-
-//Copied from utility.js
-/*function readSessionData(targetVar, userId, dbRef, callback) {
-    if (!userId) {
-        console.log("Error:readSessionData: userId invalid");
-        return false;
-    } else if (!dbRef) {
-        console.log("Error:readSessionData: dbRef invalid");
-        return false;
-    } else {
-        dbRef.ref("/sessions/" + userId).once("value").then( function(snapshot){
-            targetVar.data = snapshot.val();
-            // console.log("Current User: " + JSON.stringify(snapshot.val())); // debug
-            initTabs(snapshot.val());
-            if(callback) {
-                callback(snapshot.val());   // execute the callback
-            }
-        }).catch(function(err){
-            console.log("Error:readSessionData:firebase.database: " + err);
-        });
-        return true;
-    }
-}*/
-
 /* Utility: pageInit */
 function pageInit(user) {
     // User Menu Info 
     $("#profileUsername").html((user.email).toString());
     setupLogoutProtocol("logoutBtn", database, auth);
 }
+
+//Copied from bacpac-file-manager.js
+function applyProfileData(elemID, data) {
+		if (!elemID || !data) {
+			console.log("Error:applyProfileData: invalid parameter(s)");
+			return false;
+		} else if (elemID === '') {
+			console.log("Error:applyProfileData: invalid element ID");
+			return false;
+		}
+		$("#" + elemID).html(data);
+		return true;
+	}
 
 //Copied from bacpac-file-manager.js
 function rsdCallback(data){
@@ -311,7 +305,6 @@ function rsdCallback(data){
         default: {
             // all clear; login is valid
             applyProfileData("profileUsername", data.email);
-            main();     // run page
             return true;
             break;
         }
