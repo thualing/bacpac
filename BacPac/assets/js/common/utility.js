@@ -185,3 +185,13 @@ function setupLogoutProtocol(logoutButtonID, dbRef, authRef, callback) {
 
     return true;
 }
+
+/* Universal Utility: bacpacEncode
+        Description:
+            Encodes the specified string to URL standards, and additionally encodes it further with Google Firebase Database standards
+            Note: Per Google Firebase Standards, this function also encodes "." (period), "$" (dollar sign), "[" (left bracket), "]" (right bracket), "#" (hash), and "/" (forward slash)
+                This function also reverts encoding for the "@" symbol (i.e. if str has the "@" symbol in it, it will remain unencoded)
+*/
+function bacpacEncode(str) {
+    return encodeURIComponent(str).replace(/\./g, "%2E").replace(/\$/g, "%24").replace(/\[/g, "%5B").replace(/\]/g, "%5D").replace(/#/g, "%23").replace(/\//g, "%2F").replace(/%40/g, "@");
+}
