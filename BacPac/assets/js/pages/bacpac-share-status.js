@@ -99,7 +99,7 @@
                     // all clear; login is valid
                     applyProfileData("profileUsername", data.email);
                     main();
-                    sharedwithme();// run page
+                  //  sharedwithme();// run page
                     thatishared();
                     return true;
                     break;
@@ -111,66 +111,53 @@
         function sharedwithme()
         {
           
-            var tr = document.createElement('tr');
             var thead = document.getElementsByTagName('thead')[0];
-            database.ref("/shared/uid/fromOtherUsers/").once("value").then(function (snapshot) {
-                var info = snapshot.val();
-                var UID = Object.keys(info);//otheruserid
-                var td2 = document.createElement('td');
-                database.ref("/shared/uid/fromOtherUsers/" + UID + "/aFileOtherUserOwns_fileName0").once("value").then(function (snapshot) {
-                    var info2 = snapshot.val();
+            var i;
 
-                    //database.ref("roster/")once("value").then(function (snapshot){ var info3 = snapshot.val(); var email = Object.keys(info);...}
-                    //"/roster" + email + "/uid" UID
+            database.ref("/shared/" + uid + "/fromOtherUsers/").once('value').then(function (snapshot) {
+                for (i = 0; i < 3; i++) {
+                    // console.log(Object.keys(snapshot.val()));
+                    //var filename = Object.keys(snapshot.val());
+
+                    //  td.innerText = user_char;
+                    var info = snapshot.val();//hold filename
+                    var filename = Object.keys(info)[i];//filename array
+                    var tr = document.createElement('tr');//make row
+                    var td2 = document.createElement('td');//make cell in row// cell with email
+                    var td = document.createElement('td');// cell with file name
+                    var one = snapshot.child(filename).val();//uid:email
+                    console.log(one);
+                    var uids = Object.keys(one);//array of otheruserids
+                    console.log(uids);//array of otheruserids
+                    for (var j = 0; j < uids.length; j++) {
+                        // var email = one[uids[i]];//only giving 1st uid in array
+                        //  var email = one[uids[j]];
+                        email.push(one[uids[j]]);
+                        //    console.log(JSON.stringify(one[uids[j]]));
+                        //  td2.innerText = email;
+                        //  td2.innerText = email;
+                    }
+                    td2.innerText = email;
+                    //  }
+                    console.log(email);
+                    //   td2.innerText[0] = email;
+
+                    // var three = snapshot.child(filename).getPriority();
+                    // console.log(three);
 
 
-                    //     if (snapshot.val() == "fileName0.fileExt")//if no file has been shared
-                    //     return;
+                    tr.appendChild(td2);
+                    thead.appendChild(tr);
+
                     initTabs(user);
-                    //    var tr = document.createElement('tr');
-                    // var td = document.createElement('td');
-                 //   var td2 = document.createElement('td');
-                    //    var userdata = snapshot.val().replace("\"", "");
-                    //snapshot.val()=filename w/ extension
-                    // var td = document.createElement('td class="center"');
-                    //  th.innerText = snapshot.val().data + " --- " + JSON.stringify(snapshot.val());
-                 //   console.log(Object.keys(info2));
-                    td2.innerText = JSON.stringify(info2)//file name
-                    //  td.innerText = Object.keys(info);
-                //    tr.appendChild(td2);
-                    //    tr.appendChild(td);
-               //     thead.appendChild(tr);
-                    console.log("Shared file: " + JSON.stringify(snapshot.val())); // debug
-                    // initTabs(snapshot.val());
 
-                })
-                tr.appendChild(td2);
-                thead.appendChild(tr);
-              //  if (Object.keys(info) == "someOtherUser_Uid")//if no file has been shared
-                //       return;
-               initTabs(user);
-              //  var tr = document.createElement('tr');
-                var td = document.createElement('td');
-              //  var td2 = document.createElement('td');
-            //    var userdata = snapshot.val().replace("\"", "");
-               //snapshot.val()=filename w/ extension
-               // var td = document.createElement('td class="center"');
-                //  th.innerText = snapshot.val().data + " --- " + JSON.stringify(snapshot.val());
-             //   console.log(Object.keys(info));
-             
-              //  td2.innerText = JSON.stringify(info)//file name?
-                td.innerText = UID;//otheruserid
-                // td.innerText = "123";
-                // tr.appendChild(td2);
-            
-                tr.appendChild(td);
-              //  thead.appendChild(tr);
-             //    console.log("Shared file: " + JSON.stringify(snapshot.val())); // debug
-               // initTabs(snapshot.val());
-             
-                
+
+                    var string3 = filename.replace('%2E', '.').replace('%20', '');
+                    td.innerText = string3;//otheruserid
+                    tr.appendChild(td);
+
+                }
             })
-         
             thead.appendChild(tr);
         }
 
@@ -180,10 +167,10 @@
             var i;
 
             database.ref("/shared/" + uid + "/withOtherUsers/").once('value').then(function (snapshot) {
-                for (i = 0; i < 3; i++) {
+                for (i = 0; i < 10; i++) {
                     // console.log(Object.keys(snapshot.val()));
                     //var filename = Object.keys(snapshot.val());
-           
+                    var email = [];
                     //  td.innerText = user_char;
                     var info = snapshot.val();//hold filename
                     var filename = Object.keys(info)[i];//filename array
@@ -195,13 +182,16 @@
                    var uids = Object.keys(one);//array of otheruserids
                     console.log(uids);//array of otheruserids
                     // td2.innerText = two;
-                    for (var j = 0; j < uids.length; j++) {
-                    var email = one[uids[j]];//only giving 1st uid in array
+                  for (var j = 0; j < uids.length; j++) {
+                   // var email = one[uids[i]];//only giving 1st uid in array
+                     //  var email = one[uids[j]];
+                    email.push(one[uids[j]]);
+                //    console.log(JSON.stringify(one[uids[j]]));
                         //  td2.innerText = email;
-                    td2.innerText = email;
-                    }
+                  //  td2.innerText = email;
+                   }
                     console.log(email);
-                 //   td2.innerText[0] = email;
+                    td2.innerText = email;
                 
                    // var three = snapshot.child(filename).getPriority();
                    // console.log(three);
