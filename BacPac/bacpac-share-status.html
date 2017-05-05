@@ -56,7 +56,7 @@
            
 			<a class="navbar-brand col-lg-2 col-sm-1 col-xs-12" href="bacpac.html">
 				<span>
-					<img style="text-align:center" src="assets/ico/BacPac_32x32.png">
+					<img style="text-align:center" src="assets/ico/BacPac_32x32.png" width="32" height="32">
 				</span>
 				<span>BacPac</span>
 			</a>
@@ -384,151 +384,142 @@
 	
 	<!-- start: Container -->
 	<div class="container">
-		<div class="row">	
-			<!-- start: Main Menu -->
-			<div id="sidebar-left" class="col-lg-2 col-sm-1">
-				<!-- Search Bar -->
-				<input type="text" class="search hidden-sm" placeholder="..." />
+        <div class="row">
+            <!-- start: Main Menu -->
+            <div id="sidebar-left" class="col-lg-2 col-sm-1">
+                <!-- Search Bar -->
+                <input type="text" class="search hidden-sm" placeholder="..." />
 
-				<!-- Navbar Tabs -->
-				<div class="nav-collapse sidebar-nav collapse navbar-collapse bs-navbar-collapse">
-					<ul class="nav nav-tabs nav-stacked main-menu">
-						<!-- Tab 1: Dashboard -->
-						<li>
-							<a class="bacpacTab" href="bacpac.html">
-								<i class="fa fa-bar-chart-o"></i>
-								<span class="hidden-sm"> Dashboard</span>
-							</a>
-						</li>
+                <!-- Navbar Tabs -->
+                <div class="nav-collapse sidebar-nav collapse navbar-collapse bs-navbar-collapse">
+                    <ul class="nav nav-tabs nav-stacked main-menu">
+                        <!-- Tab 1: Dashboard -->
+                        <li>
+                            <a class="bacpacTab" href="bacpac.html">
+                                <i class="fa fa-bar-chart-o"></i>
+                                <span class="hidden-sm"> Dashboard</span>
+                            </a>
+                        </li>
 
-						<!-- Tab 2: File Manager -->
-						<li>
-							<a class="bacpacTab" href="bacpac-file-manager.html">
-								<i class="fa fa-folder-open"></i>
-								<span class="hidden-sm"> Files</span>
-							</a>
-						</li>
+                        <!-- Tab 2: File Manager -->
+                        <li>
+                            <a class="bacpacTab" href="bacpac-file-manager.html">
+                                <i class="fa fa-folder-open"></i>
+                                <span class="hidden-sm"> Files</span>
+                            </a>
+                        </li>
 
-						<!-- Tab 3: Uploader -->
-						<li>
-							<a class="bacpacTab" href="bacpac-upload.html">
-								<i class="fa fa-cloud-upload"></i>
-								<span class="hidden-sm"> Upload</span>
-							</a>
-						</li>
+                        <!-- Tab 3: Uploader -->
+                        <li>
+                            <a class="bacpacTab" href="bacpac-upload.html">
+                                <i class="fa fa-cloud-upload"></i>
+                                <span class="hidden-sm"> Upload</span>
+                            </a>
+                        </li>
 
-						<!-- Tab 4: Sharing Status -->
-						<li>
-							<a class="bacpacTab" href="bacpac-share-status.html">
-								<i class="fa fa-bar-chart-o"></i>
-								<span class="hidden-sm"> Share Status</span>
-							</a>
-						</li>
+                        <!-- Tab 4: Sharing Status -->
+                        <li>
+                            <a class="bacpacTab" href="bacpac-share-status.html">
+                                <i class="fa fa-bar-chart-o"></i>
+                                <span class="hidden-sm"> Share Status</span>
+                            </a>
+                        </li>
 
-						<!-- Tab 5: Recent -->
-						<li>
-							<a class="bacpacTab" href="bacpac-recent.html">
-								<i class="fa fa-exclamation"></i>
-								<span class="hidden-sm"> Recent</span>
-							</a>
-						</li>
+                        <!-- Tab 5: Recent -->
+                        <li>
+                            <a class="bacpacTab" href="bacpac-recent.html">
+                                <i class="fa fa-exclamation"></i>
+                                <span class="hidden-sm"> Recent</span>
+                            </a>
+                        </li>
 
-						<!-- Tab 6: Trash -->
-						<li>
-							<a class="bacpacTab" href="bacpac-trash.html">
-								<i class="fa fa-trash-o"></i>
-								<span class="hidden-sm"> Trash</span>
-							</a>
-						</li>
+                        <!-- Tab 6: Trash -->
+                        <li>
+                            <a class="bacpacTab" href="bacpac-trash.html">
+                                <i class="fa fa-trash-o"></i>
+                                <span class="hidden-sm"> Trash</span>
+                            </a>
+                        </li>
 
-						<!-- Tab N: Some Application -->
-						<!-- <li>
-							<a href="">
-								<i></i>
-								<span></span>
-							</a>
-						</li> -->
-					</ul>
-				</div>
-			</div>
-			<!-- end: Main Menu -->
-						
-			<!-- start: Content -->
-			<div id="content" class="col-lg-10 col-sm-11">
-				<div class="row">		
-					<div class="col-lg-12">
-						<div class="box">
-							<div class="box-header" data-original-title>
-								<h2><i class="fa fa-user"></i><span class="break"></span>Files Shared With Me</h2>
-								<div class="box-icon">
+                        <!-- Tab N: Some Application -->
+                        <!-- <li>
+                        <a href="">
+                            <i></i>
+                            <span></span>
+                        </a>
+                    </li> -->
+                    </ul>
+                </div>
+            </div>
+            <!-- end: Main Menu -->
+            <!-- start: Content -->
+            <div id="content" class="col-lg-10 col-sm-11">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="box">
+                            <div class="box-header" data-original-title>
+                                <h2><i class="fa fa-user"></i><span class="break"></span>Files Shared With Me</h2>
+                                <div class="box-icon">
 
-									<a href="table.html#" class="btn-setting"><i class="fa fa-wrench"></i></a>
-									<a href="table.html#" class="btn-minimize"><i class="fa fa-chevron-up"></i></a>
-									<a href="table.html#" class="btn-close"><i class="fa fa-times"></i></a>
-								</div>
-							</div>
-							<div class="box-content">
-								<table class="table table-striped table-bordered bootstrap-datatable datatable">
-								  <thead>
-									  <tr>
-										  <th>File Name</th>
-										  <th>Shared By</th>
-										  <th>Date Shared</th>
-										  <th>File Type</th>
-										  
-									  </tr>
-								  </thead>   
-								  <tbody>
-						
-						
-							
-								  </tbody>
-							  </table>       
-                                     
-							</div>
-						</div>
-					</div><!--/col-->
-				</div><!--/row-->
+                                    <a href="table.html#" class="btn-setting"><i class="fa fa-wrench"></i></a>
+                                    <a href="table.html#" class="btn-minimize"><i class="fa fa-chevron-up"></i></a>
+                                    <a href="table.html#" class="btn-close"><i class="fa fa-times"></i></a>
+                                </div>
+                            </div>
+                            <div class="box-content">
+                                <table class="table table-striped table-bordered bootstrap-datatable datatable">
+                                    <thead>
+                                        <tr>
+                                            <th>File Name</th>
+                                            <th>Shared By</th>
+                                            <th>Date Shared</th>
+                                            <th>File Type</th>
 
-			
-				</div><!--/row-->
-            
-			
-				<div class="row">	
-					<div class="col-lg-12">
-						<div class="box">
-							<div class="box-header">
-								<h2><i class="fa fa-align-justify"></i><span class="break"></span>Combined All Table</h2>
-								<div class="box-icon">
-									<a href="table.html#" class="btn-setting"><i class="fa fa-wrench"></i></a>
-									<a href="table.html#" class="btn-minimize"><i class="fa fa-chevron-up"></i></a>
-									<a href="table.html#" class="btn-close"><i class="fa fa-times"></i></a>
-								</div>
-							</div>
-							<div class="box-content">
-								<table class="table table-bordered table-striped table-condensed">
-									  <thead>
-										  <tr>
-											  <th>Username</th>
-											  <th>Date registered</th>
-											  <th>Role</th>
-											  <th>Status</th>                                          
-										  </tr>
-									  </thead>   
-									  <tbody>
-									
-									
-									
-									
-									                               
-									  </tbody>
-								 </table>  
-								 
-							</div>
-						</div>
-					</div><!--/col-->
-				</div><!--/row-->	
-			</div>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+
+                            </div>
+                        </div>
+                    </div><!--/col-->
+                </div><!--/row-->
+
+
+            </div><!--/row-->
+
+            <div id="content" class="col-sm-11">
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="box">
+                            <div class="box-header">
+                                <h2><i class="fa fa-align-justify"></i><span class="break"></span>Files That I Shared</h2>
+                                <div class="box-icon">
+                                    <a href="table.html#" class="btn-setting"><i class="fa fa-wrench"></i></a>
+                                    <a href="table.html#" class="btn-minimize"><i class="fa fa-chevron-up"></i></a>
+                                    <a href="table.html#" class="btn-close"><i class="fa fa-times"></i></a>
+                                </div>
+                            </div>
+                            <div class="box-content">
+                                <table class="table table-bordered table-striped table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th>Shared With</th>
+                                            <th>File Name</th>
+                                            <th>Role</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+
+                            </div>
+                        </div>
+                    </div><!--/col-->
+                </div><!--/row-->
+            </div>
+        </div><!--/row-->
 			<!-- end: Content -->	
 		</div><!--/row-->
 	</div><!--/container-->
