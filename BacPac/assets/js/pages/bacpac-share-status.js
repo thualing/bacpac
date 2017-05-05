@@ -175,130 +175,52 @@
         }
 
         function thatishared() {
-          
+
             var thead = document.getElementsByTagName('thead')[1];
             var i;
-          
-            //var user_char = {};
-            database.ref("/shared/" + uid + "/withOtherUsers/").once('value').then(function(snapshot){
-                for (i = 0; i < 3; i++){
-               // console.log(Object.keys(snapshot.val()));
-                //var filename = Object.keys(snapshot.val());
-               /* snapshot.forEach(function (childSnapshot) {
-                    //var td = document.createElement('td');// cell with file name
-                
 
-                    
-                    var childData = childSnapshot.val();
-                    // var childKey2 = childSnapshot.key;
-                    console.log(childKey);//1st filename
-                    console.log(JSON.stringify(childData));//uid: email
-
-                    //var tr = document.createElement('tr');
-                    // var td = document.createElement('td');
-                    // td.innerText = child.val().email + " --- " + JSON.stringify(child.val());
-                    // tr.appendChild(td);
-                    // table.appendChild(tr);
-
-                    user_char[childKey] = childData;
-                  
-                    tr.appendChild(td);
-                 //   thead.appendChild(tr);
-                })*/
-
-               // store_user_char(user_char);
-              
-              //  td.innerText = user_char;
+            database.ref("/shared/" + uid + "/withOtherUsers/").once('value').then(function (snapshot) {
+                for (i = 0; i < 3; i++) {
+                    // console.log(Object.keys(snapshot.val()));
+                    //var filename = Object.keys(snapshot.val());
+           
+                    //  td.innerText = user_char;
                     var info = snapshot.val();//hold filename
-                    var filename = Object.keys(info);//filename array
+                    var filename = Object.keys(info)[i];//filename array
                     var tr = document.createElement('tr');//make row
                     var td2 = document.createElement('td');//make cell in row// cell with email
                     var td = document.createElement('td');// cell with file name
-
-                 //   console.log(filename);
-                    // if (filename == undefined)
-                    //    break;
-                    // for (var p in filename) {
-           
-                 //   var id = database.ref("/shared/" + uid + "/withOtherUsers/");
-                  //  id.on('child_added', function (snapshot) {
-                    database.ref("/shared/" + uid + "/withOtherUsers/").once('value').then(function (snapshot) {
-                        var info2 = snapshot.val();//hold other user id
-                        var UID = Object.keys(info2);//OTHERUSERUID
-                        // td2.innerText = UID;
-                      
-                      //  console.log(UID);
-                        //   var td2 = document.createElement('td')
-                        database.ref("/shared/" + uid + "/withOtherUsers/" + filename + "/" + UID).once("value").then(function (snapshot) {
-                            //  for (i = 0; i < 2; i++) {
-
-                            var info3 = snapshot.val();//hold's other user's email
-                            initTabs(user);
-
-                          //  var allValues = [];
-                           // var usedKeys = {};
-
-                                   
-                            var string = JSON.stringify(info3);
-
-                            string2 = string.replace(/['"]+/g, '');
-                             
-                           td2.innerText = string2;//display other user's email
-                            /*   for (var i = 0; i < filename.length; ++i) {
-                                   // If the parent object does not have a matching sub-object, skip to the
-                                   // next iteration of the loop
-
-
-                                   var subKeys = Object.keys(string2);
-                                   for (var j = 0; j < subKeys.length; ++j) {
-                                       if (usedKeys[subKeys[j]]) {
-                                           continue;
-                                       }
-                                       usedKeys[subKeys[j]] = true;
-                                       allValues.push(string2[subKeys[j]]);
-                                       //  console.log(allValues);
-                                       td2.innerText = allValues;
-                                   }
-                               }*/
-                            //   tr.appendChild(td2);
-
-                        })
-
-                        // tr.appendChild(td2);
-                            
-                    })
-                    
-                    //    if (filename == undefined)
-                    //    break;
+                    var one = snapshot.child(filename).val();//uid:email
+                    console.log(one);
+                   var uids = Object.keys(one);//array of otheruserids
+                    console.log(uids);//array of otheruserids
+                    // td2.innerText = two;
+                    for (var j = 0; j < uids.length; j++) {
+                    var email = one[uids[j]];//only giving 1st uid in array
+                        //  td2.innerText = email;
+                    td2.innerText = email;
+                    }
+                    console.log(email);
+                 //   td2.innerText[0] = email;
+                
+                   // var three = snapshot.child(filename).getPriority();
+                   // console.log(three);
+               
+             
                     tr.appendChild(td2);
                     thead.appendChild(tr);
-                  
+
                     initTabs(user);
-                    
-                    
-                   // var string3 = filename.replace('%2E', '.').replace('%20', '');
-                    td.innerText = filename;//otheruserid
-                   
-                    // tr.appendChild(td2);
-                    
+
+
+                    var string3 = filename.replace('%2E', '.').replace('%20', '');
+                    td.innerText = string3;//otheruserid
                     tr.appendChild(td);
-              
-                     }
-                })
-            
-            
+
+                }
+            })
             thead.appendChild(tr);
         }
-
-       /* var store_user_char = function (user_char) {
-            char_obj = user_char;
-            console.log(char_obj);
-            for (var key in char_obj) {
-                if (char_obj.hasOwnProperty(key)) {
-                    console.log(key);
-                }
-            }
-        }*/
 
             function applyProfileData(elemID, data) {
                 if (!elemID || !data) {
