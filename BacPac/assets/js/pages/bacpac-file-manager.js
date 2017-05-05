@@ -5,6 +5,15 @@
 
 $(document).ready(function () {
 	console.log("File Manager initialized...");
+	$("#optionsButton").click(function (event) {
+			event.preventDefault();
+		if ($("#fileOptionsMenu").hasClass("hidden")) {
+			$("#fileOptionsMenu").removeClass("hidden");
+		}
+		else {
+			$("#fileOptionsMenu").addClass("hidden");
+		}
+	});
 });
 
 /* Init */
@@ -27,6 +36,7 @@ $(document).ready(function () {
 
 	// Firebase Authentication Safeguard
 	var user = {data:""};
+	var currentDirectory = "";
 	var uid = getParameterByName("uid");
 	readSessionData(user, getParameterByName("uid"), database, rsdCallback);
 	switch(uid) {
@@ -78,6 +88,10 @@ $(document).ready(function () {
 
 		/* Apply proper logout protocol to the logout button */
 		setupLogoutProtocol("logoutBtn", database, auth);
+
+		/* setup the Add Folder stuff */
+		setupAddFolderButton();
+
 	}
 
 
@@ -724,4 +738,26 @@ $(document).ready(function () {
 				break;
 			}
 		}
+	}
+
+/* File Manager Utility: setupAddFolderButton
+		Description:
+			tells the Add Folder button to launch Add Folder Modal
+		Expects:
+			N/A
+		Parameters: DNE for now
+		Returns:
+			N/A
+	 */
+	function setupAddFolderButton() {
+		$("#addFolder").click(function (event) {
+			$("#addFolderModal").modal('show');
+		});
+		$("#makeFolderButton").click(function (event) {
+			console.log($("#folderNameText").val());
+			var folderNameText = $("#folderNameText").val();
+
+			database.ref();
+
+		})
 	}
