@@ -226,9 +226,19 @@ Don't use strict mode; there are possible browser compatilibity issues
 
 			"0": 0
 		};
+		initRefs["messages/" + user.uid + "/inbox"] = {	// init user's messages inbox
+			"0": 0
+		}
+		initRefs["roster/" + bacpacEncode(user.email)] = {	// init user's roster entry
+			uid: user.uid
+		};
 		initRefs["shared/" + user.uid] = {		// init user's shared with me folder
-			fromOtherUsers: "0",
-			withOtherUsers: "0"
+			fromOtherUsers: {
+				"0": 0
+			},
+			withOtherUsers: {
+				"0": 0
+			}
 		};
 		initRefs["trash/" + user.uid] = {	// init user's "trash" folder
 			0: {	// fileName
