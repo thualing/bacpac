@@ -221,7 +221,7 @@ function fireBaseImageUpload(parameters, callBackData) {
 
 /* Creates a record of file in DB*/
 function writeUploadToDB(userId, fileName, filePath) {
-	var decodedFileName = decodeURI(fileName).replace(/\%2E/g, '.').replace(/\%23/g, '#').replace(/\%24/g,'$').replace(/\%5B/g,'[').replace(/\%5D/g,']');
+	var decodedFileName = decodeURI(fileName).replace(/\%2E/g, '.').replace(/\%23/g, '#').replace(/\%24/g,'$').replace(/\%5B/g,'[').replace(/\%5D/g,']').replace(/\%2F/g, '/');
 
     database.ref("fileName/" + userId +"/" + fileName).set({
         'path' : filePath
