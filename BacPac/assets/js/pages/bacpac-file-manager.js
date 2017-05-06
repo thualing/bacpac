@@ -808,15 +808,20 @@ $(document).ready(function () {
 				// console.log(nameOfStuff);
 				if (nameOfStuff.includes(folderNameText)) {
 					console.log(-1);
+					var errMsg = "Please choose another folder name";
+					$('#addFolderErrorMessage').html(errMsg);
+					$('#folderNameText').val('');
 				}
 				else {
+					listDirectoryContent(user.data.uid, "/" + currentDirectory, database, updateFolderPane);
 					database.ref("folder/" + uid +"/" + currentDirectory + "/" + folderNameText).set({
 						'0' : 0
 					});
 					console.log("added");
+					$('#folderNameText').val('');
+					$('#addFolderErrorMessage').hide();
 				}
 			});
-
 
 		})
 	}
