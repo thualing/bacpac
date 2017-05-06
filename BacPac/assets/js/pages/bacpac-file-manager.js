@@ -814,7 +814,6 @@ $(document).ready(function () {
 					$('#folderNameText').val('');
 				}
 				else {
-					listDirectoryContent(user.data.uid, "/" + currentDirectory, database, updateFolderPane);
 					database.ref("folder/" + uid +"/" + currentDirectory + "/" + folderNameText).set({
 						'0' : 0
 					});
