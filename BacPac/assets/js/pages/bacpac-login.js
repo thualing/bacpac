@@ -112,6 +112,36 @@ Don't use strict mode; there are possible browser compatilibity issues
 		}
 	});
 
+/* Action: "Reset Password Link" Click */
+	$("#resetPasswordLink").on("click", function() {
+		console.log("Resetting Password...");
+		$("#passwordResetModal").modal("show");
+	});
+
+/* Action: "Close Reset Password Modal Button" Click */
+	$("#resetPasswordModalClose").on("click", function() {
+		console.log("Closing Resetting Password Modal...");
+		$("#resetEmail").val("");
+		$("#passwordResetModal").modal("hide");
+	});
+
+/* Action: "Confirm Reset Password Modal Button" Click */
+	$("#resetPasswordModalConfirm").on("click", function() {
+		var resetEmail = $("#resetEmail").val();
+		console.log("Sending Password Reset Email to " + resetEmail + "...");
+		
+		auth.sendPasswordResetEmail(resetEmail).then(function() {
+			console.log("Email of Password Reset was successfully sent...");
+			$("#resetConfirmationModal").modal("show");
+			$("#resetPasswordModalClose").click();			
+		}, function (error) {
+			console.log("[ERR] " + error.code + ": " + error.message);
+			$("#resetPasswordModalClose").click();
+		});
+
+		$("#resetPasswordModalClose").click();
+	});
+
 /* Action: "Create Account Button" Click */
 	$('#createAccount').on("click", function(){
 		console.log("Creating a new account...");
