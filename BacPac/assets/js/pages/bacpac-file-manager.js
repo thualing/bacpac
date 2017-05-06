@@ -131,11 +131,11 @@ $(document).ready(function () {
 					break;
 				}
 				default: {		// otherwise... process the files...
-					console.log("A: " + currentDirectoryLedger[i] + " B:" + database + " C: " + uid);	// debug
+					// console.log("A: " + currentDirectoryLedger[i] + " B:" + database + " C: " + uid);	// debug
 					distinguishEntity(currentDirectoryLedger[i], database, uid, function (result, key) {
 						switch (result) {
 							case "file": {
-								console.log(result + " " + key);	// debug
+								// console.log(result + " " + key);	// debug
 								var elementID = "file" + counter;
 								var elementDropdownID = "folder" + counter + "dropdown";
 								var fileName = decodeURIComponent(key);
@@ -165,7 +165,7 @@ $(document).ready(function () {
 														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick='promptDownloadFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Open/Download</button>\
 														<button class='fileOptionMenuBtn btn btn-block btn-info' onclick='promptShareFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Sharing</button>\
 														<button class='fileOptionMenuBtn btn btn-block btn-default' onclick='promptPropertiesFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Properties</button>\
-														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick='deleteFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Delete</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick='promptDeleteFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Delete</button>\
 													</div>\
 												</div>\
 											</div>\
@@ -807,16 +807,157 @@ $(document).ready(function () {
 				var nameOfStuff = Object.keys(directoryContents);
 				// console.log(nameOfStuff);
 				if (nameOfStuff.includes(folderNameText)) {
-					console.log(-1);
+					console.log("Alert:setupAddFolderButton: Duplicate folder found! Consider a different name...");
 				}
 				else {
+					console.log("Alert:setupAddFolderButton: Adding empty folder to the current directory: '/" + currentDirectory + "'");
 					database.ref("folder/" + uid +"/" + currentDirectory + "/" + folderNameText).set({
 						'0' : 0
+					}).then(function() {
+						console.log("Alert:setupAddFolderButton: Successfully added empty folder!");
+						console.log("Alert:setupAddFolderButton: Reloading Directory Display... ");
+
+						// Reload the user's front end file manager
+						listDirectoryContent(user.data.uid, "/" + currentDirectory , database, updateFolderPane);
+
+						// Close the add Folder modal
+						$("#addFolderModal").modal("hide");
+					}).catch(function(error) {
+						console.log("Error:setupAddFolderButton: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");
 					});
-					console.log("added");
 				}
 			});
+		});
+	}
 
+/* File Manager Utility: promptDeleteFromElement
+	Description:
+		Launches a modal warning the user about permanent deletion of file content.
+		If approved, permanently deletes the file from the Firebase Database records, removes it from storage, then reloads the user's directory view
+	Expects:
+		The element with id "elemID" must represent a file element in the UI (i.e. it must have the css class "fileElement")
+		(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+			"database" in it, and a firebase.storage(object) named "storage".
+	Parameters:
+		string elemID - the ID of the element representing the file to delete
+		string userID - the current user's uid
+	Returns:
+		?
+*/
+	function promptDeleteFromElement(elemID, userID) {
+		var fileName = $("#" + elemID + "filename").html();
+		console.log("Preparing to Delete file!");
 
-		})
+		// Setup warning content
+		$("#filenameToDelete").html("<h2>Are you sure you want to delete file '" + fileName + "'?</h2>\
+			<h5 style='color:red;'>It will be permanently deleted from your BacPac...</h5>");
+		$("#deleteModal").modal("show");
+
+		// Setup confirm button action
+		$("#deleteModalConfirm").off("click");
+		$("#deleteModalConfirm").on("click", function () {
+			// delete the file from the database
+			deleteFile(fileName, userID, database, storage);
+
+			// reload the directory view
+			listDirectoryContent(userID, "/" + currentDirectory , database, updateFolderPane);
+
+			// reset modal
+			$("#filenameToDelete").html("");
+			$("#deleteModal").modal("hide");
+			$("#deleteModal").modal("hide");
+		});
+
+		// Setup additional cancel button actions
+		$("#deleteModalCancel").off("click");
+		$("#deleteModalCancel").on("click", function () {
+			$("#filenameToDelete").html("");
+			$("#deleteModal").modal("hide");
+			console.log("Cancelling Deletion...");
+		});
+	}
+
+/* File Manager Utility: deleteFile
+		Description:
+			Deletes the selected file from the database
+		Expects:
+			?
+		Parameters:
+			string file - the unencoded name of the file to delete
+			string userID - the current user's uid
+			FirebaseObject dbRef - the firebase.database() object
+			FirebaseObject stRef - the firebase.storage() object
+		Returns:
+			?
+*/
+	function deleteFile(file, userID, dbRef, stRef) {
+		if (!file || !userID || !dbRef || !stRef) {
+			console.log("Error:deleteFile: Invalid Parameter(s)");
+			return;
+		} else if (file === "") {
+			console.log("Error:deleteFile: file not specified!");
+			return;
+		}
+		var encodedFileName = bacpacEncode(file);
+		console.log("Alert:deleteFile: Permanently deleting file '" + file + "' (" + encodedFileName + ") from BacPac servers...");
+
+		// remove records of the file from the current user's (and shared users') database sections
+		dbRef.ref("/folder/" + userID + "/" + currentDirectory + "/" + encodedFileName).remove().then(function(){	// delete from /folder
+			console.log("Alert:deleteFile: Successfully deleted file's folder record...");
+			dbRef.ref("/fileName/" + userID + "/" + encodedFileName).remove().then(function(){	// delete from /fileName
+				console.log("Alert:deleteFile: Successfully deleted file's fileName record...");
+				dbRef.ref("/fileAttribute/" + userID + "/" + encodedFileName).remove().then(function(){	// delete from /fileAttribute
+					console.log("Alert:deleteFile: Successfully deleted file's fileAttribute record...");
+
+					// Unshare the file from whoever it's shared with (since it's deleted)
+					dbRef.ref("/shared/" + userID + "/withOtherUsers/" + encodedFileName).once("value").then(function(snapshot) {	// acquire full list of users who are shared the file
+						var sharingList = snapshot.val();	// get the JSON of the entire sharing list for this file
+						var arrayOfUids;
+
+						// if the file was NOT shared with anyone (i.e. snapshot.val() === null), skip this part, since we won't need to delete from anybody's sharing list
+						if (!sharingList) {
+							console.log("Alert:deleteFile: Deleted file was not shared with anyone... ");
+							return;
+						} else {
+							arrayOfUids = Object.keys(sharingList);	// get the keys
+
+							// destroy the current user's sharing record; we won't need it in the db anymore, since we copied it to var sharingList above
+							dbRef.ref("/shared/" + userID + "/withOtherUsers/" + encodedFileName).remove().then(function () {
+								console.log("Alert:deleteFile: Successfully deleted file from your sharing records...");
+							}).catch(function (error) {
+								console.log("Error:deleteFile: Internal Error Occurred! [database remove(/withOtherUsers/encodedFileName)] [" + error.code + " (" + error.message + ")]");
+							});
+
+							// at the same time, for each user that this file is shared with, remove their shared entries
+							arrayOfUids.forEach(function (currentUid, currentIndex, returnedArray) {
+								dbRef.ref("/shared/" + currentUid + "/fromOtherUsers/" + userID + "/" + encodedFileName).remove().then(function() {	// remove the file from peoples' sharing record
+									if (currentIndex === returnedArray.length - 1) {
+										console.log("Alert:deleteFile: Successfully removed sharing history from other users' accounts...");
+									}
+								}).catch(function (error) {
+									console.log("Error:deleteFile: Internal Error Occurred! [database remove(/fromOtherUsers/...)] [" + error.code + " (" + error.message + ")]");
+								});
+							});
+							return;
+						}
+					}).catch(function (error) {
+						console.log("Error:deleteFile: Internal Error Occurred! [database get(sharingList)] [" + error.code + " (" + error.message + ")]");
+					});
+				}).catch(function (error) {
+					console.log("Error:deleteFile: Internal Error Occurred! [database->/fileAttribute] [" + error.code + " (" + error.message + ")]");
+				});
+			}).catch(function (error) {
+				console.log("Error:deleteFile: Internal Error Occurred! [database->/fileName] [" + error.code + " (" + error.message + ")]");
+			});
+		}).catch(function (error) {
+			console.log("Error:deleteFile: Internal Error Occurred! [database->/folder] [" + error.code + " (" + error.message + ")]");
+		});
+
+		// remove the file from storage
+		stRef.ref("files/" + userID + "/" + file).delete().then(function() {
+			console.log("Alert:deleteFile: Successfully removed file from your BacPac storage");
+		}).catch(function (error) {
+			console.log("Error:deleteFile: Internal Error Occurred! [storage] [" + error.code + " (" + error.message + ")]");
+			return;
+		});
 	}
