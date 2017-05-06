@@ -181,9 +181,25 @@ $(document).ready(function () {
 								break;
 							}
 							case "folder": {
+								var elementID = "folder" + counter;
 								var folderName = decodeURIComponent(key);
 								// console.log(result + " " + key);	// debug
-								// folderElements += "<div class='list-group btn-group'><button id='folder" + i + "' type='button' class='folderElement list-group-item btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>" + decodeURIComponent(key) + "</button><ul id='folder" + i + "dropdown' class='dropdown-menu'><li><a href='#'>" + folderName + "</a></li></ul></div>";
+								folderElements += "<div class='col-xs-6 col-md-3' style='padding-top: 10px'>\
+									<div id='" + elementID + "' class='fileElement' title='Click For File Options'>\
+										<div role='button' class='thumbnail'>\
+											<div onclick='folderMenu(" + '"' + elementID + '"' + ")'>\
+												<span class='glyphicon glyphicon-folder-open' style='font-size: large;display: block; word-wrap: break-word; width: inherit'></span>\
+												<span id='" + elementID + "foldername' style='display: block; word-wrap: break-word; width: inherit; font-size: medium'>" + folderName + "</span>\
+												<div id='" + elementID + "OptionMenu' class='fileOptionMenu container-fluid hidden'>\
+													<div class='row'>\
+														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick=''>Open</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick=''>Delete</button>\
+													</div>\
+												</div>\
+											</div>\
+										</div>\
+									</div>\
+								</div>";
 								counter++;
 								break;
 							}
@@ -222,6 +238,32 @@ $(document).ready(function () {
 		switch($("#" + elemID + "OptionMenu").hasClass("hidden")) {
 			case true: {	// if a file's option menu is closed
 				$(".fileOptionMenu").addClass("hidden");	// close any other open file option menus before opening this one
+				$("#" + elemID + "OptionMenu").removeClass("hidden");	// then open this one
+				break;
+			}
+			default: {	// if it is already open
+				$("#" + elemID + "OptionMenu").addClass("hidden");	// close this one
+				break;
+			}
+		}
+	}
+
+/* File Manager Utility: folderMenu
+		 Description:
+		 	Launches the folder menu for the folder element specified by elemID
+		 Expects:
+		 	?
+		 Parameters:
+		 	string elemID - the id of the file element that was clicked
+		 Returns:
+		 	N/A
+ */
+	function folderMenu(elemID) {
+		// console.log("Hi, I'm " + elemID);	// debug
+
+		switch($("#" + elemID + "OptionMenu").hasClass("hidden")) {
+			case true: {	// if a file's option menu is closed
+				$(".folderOptionMenu").addClass("hidden");	// close any other open file option menus before opening this one
 				$("#" + elemID + "OptionMenu").removeClass("hidden");	// then open this one
 				break;
 			}
@@ -760,7 +802,21 @@ $(document).ready(function () {
 			console.log($("#folderNameText").val());
 			var folderNameText = $("#folderNameText").val();
 
-			database.ref();
+			database.ref("folder/" + uid + "/" + currentDirectory).once("value").then(function (snapshot) {
+				var directoryContents = snapshot.val();
+				var nameOfStuff = Object.keys(directoryContents);
+				// console.log(nameOfStuff);
+				if (nameOfStuff.includes(folderNameText)) {
+					console.log(-1);
+				}
+				else {
+					database.ref("folder/" + uid +"/" + currentDirectory + "/" + folderNameText).set({
+						'0' : 0
+					});
+					console.log("added");
+				}
+			});
+
 
 		})
 	}
