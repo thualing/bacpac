@@ -70,7 +70,7 @@
 					<hr>
 					<h3>Forgot Password?</h3>
 					<p>
-						No problem, <a href="bacpac-login.html#">click here</a> to get a new password.
+						No problem, <a id="resetPasswordLink" href="bacpac-login.html#">click here</a> to get a new password.
 					</p>
 					<hr>
 					<h3>New to Bacpac?</h3>
@@ -96,8 +96,8 @@
 							<h2>Create a new BacPac account</h2>
 							<form class="form-horizontal">
 								<fieldset>
-									<input class="input-large col-xs-12" name="newUsername" id="createUsername" placeholder="new username" type="text">
-									<input class="input-large col-xs-12" name="newPassword" id="createPassword" placeholder="new password" type="password">
+									<input class="input-large col-xs-12" name="newUsername" id="createUsername" placeholder="New Email" type="text">
+									<input class="input-large col-xs-12" name="newPassword" id="createPassword" placeholder="New Password" type="password">
 									<div class="clearfix"></div>
 								</fieldset>
 							</form>
@@ -139,6 +139,59 @@
 		</div>
 	</div>
 	<!-- end: Email Verification Modal -->
+
+	<!-- begin: Password Reset Modal -->
+	<div id="passwordResetModal" class="modal fade" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<!-- Modal Header -->
+				<div class="modal-header">
+					<h2 class="modal-title">Password Reset</h2>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			        	<span aria-hidden="true">×</span>
+			        </button>
+				</div>
+				<!-- Modal Body -->
+				<div id="passwordResetModalBody" class="modal-body">
+					<p>Enter your account email for a password reset link:</p>
+					<fieldset>
+						<input class="form-control col-xs-12" style="background-color:#d9d9d9;" name="resetEmail" id="resetEmail" placeholder="Email" type="text">
+						<div class="clearfix"></div>
+					</fieldset>
+				</div>
+				<!-- Modal Footer -->
+				<div class="modal-footer">
+		        	<button id="resetPasswordModalClose" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		        	<button id="resetPasswordModalConfirm" type="button" class="btn btn-success">Send Email</button>
+		      	</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Password Reset Modal -->
+
+	<!-- begin: resetEmailConfirmationModal -->
+	<div id="resetConfirmationModal" class="modal fade" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<!-- Modal Header -->
+				<div class="modal-header">
+					<h2 class="modal-title">Password Reset</h2>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			        	<span aria-hidden="true">×</span>
+			        </button>
+				</div>
+				<!-- Modal Body -->
+				<div id="resetConfirmationModalBody" class="modal-body">
+					<p>A password reset link was sent to your email...</p>
+				</div>
+				<!-- Modal Footer -->
+				<div class="modal-footer">
+		        	<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		      	</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: resetEmailConfirmationModal -->
 
 	<!-- start: JavaScript-->
 		<!--[if !IE]>-->
