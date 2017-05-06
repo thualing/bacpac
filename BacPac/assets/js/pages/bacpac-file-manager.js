@@ -131,11 +131,11 @@ $(document).ready(function () {
 					break;
 				}
 				default: {		// otherwise... process the files...
-					// console.log("A: " + currentDirectoryLedger[i] + " B:" + database + " C: " + uid);	// debug
+					console.log("A: " + currentDirectoryLedger[i] + " B:" + database + " C: " + uid);	// debug
 					distinguishEntity(currentDirectoryLedger[i], database, uid, function (result, key) {
 						switch (result) {
 							case "file": {
-								// console.log(result + " " + key);	// debug
+								console.log(result + " " + key);	// debug
 								var elementID = "file" + counter;
 								var elementDropdownID = "folder" + counter + "dropdown";
 								var fileName = decodeURIComponent(key);
@@ -181,7 +181,10 @@ $(document).ready(function () {
 								break;
 							}
 							case "folder": {
-								folderElements += "<div class='list-group btn-group'><button id='folder" + i + "' type='button' class='folderElement list-group-item btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>" + decodeURIComponent(key) + "</button><ul id='folder" + i + "dropdown' class='dropdown-menu'><li><a href='#'>Hello</a></li></ul></div>";
+								var folderName = decodeURIComponent(key);
+								// console.log(result + " " + key);	// debug
+								// folderElements += "<div class='list-group btn-group'><button id='folder" + i + "' type='button' class='folderElement list-group-item btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>" + decodeURIComponent(key) + "</button><ul id='folder" + i + "dropdown' class='dropdown-menu'><li><a href='#'>" + folderName + "</a></li></ul></div>";
+								counter++;
 								break;
 							}
 							default: {
@@ -192,8 +195,8 @@ $(document).ready(function () {
 
 						// Only place elements on the UI when all files' html templates are configured (improves UI efficiency)
 						if (counter === currentDirectoryLedger.length - 1) {
-							insertIntoElement("fileManagerFoldersPane", folderElements);	// populate folder navigation tree
-							insertIntoElement("fileManagerContent", fileElements);		// populate folder content box
+							// insertIntoElement("fileManagerFoldersPane", folderElements);	// populate folder navigation tree
+							insertIntoElement("fileManagerContent", folderElements + fileElements);		// populate folder content box
 						}
 					});
 					break;
