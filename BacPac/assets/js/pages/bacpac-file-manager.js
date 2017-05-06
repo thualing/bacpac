@@ -164,6 +164,7 @@ $(document).ready(function () {
 													<div class='row'>\
 														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick='promptDownloadFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Open/Download</button>\
 														<button class='fileOptionMenuBtn btn btn-block btn-info' onclick='promptShareFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Sharing</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-basic' onclick='promptMoveToFolderElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Move To Folder</button>\
 														<button class='fileOptionMenuBtn btn btn-block btn-default' onclick='promptPropertiesFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Properties</button>\
 														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick='deleteFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Delete</button>\
 													</div>\
