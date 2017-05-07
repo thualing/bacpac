@@ -36,7 +36,7 @@ $(document).ready(function () {
 
 	// Firebase Authentication Safeguard
 	var user = {data:""};
-	var currentDirectory = "";
+	var currentDirectory = "/";
 	var uid = getParameterByName("uid");
 	readSessionData(user, getParameterByName("uid"), database, rsdCallback);
 	switch(uid) {
@@ -186,15 +186,15 @@ $(document).ready(function () {
 								var folderName = decodeURIComponent(key);
 								// console.log(result + " " + key);	// debug
 								folderElements += "<div class='col-xs-6 col-md-3' style='padding-top: 10px'>\
-									<div id='" + elementID + "' class='fileElement' title='Click For File Options'>\
+									<div id='" + elementID + "' class='fileElement' title='Click For Folder Options'>\
 										<div role='button' class='thumbnail'>\
 											<div onclick='folderMenu(" + '"' + elementID + '"' + ")'>\
 												<span class='glyphicon glyphicon-folder-open' style='font-size: large;display: block; word-wrap: break-word; width: inherit'></span>\
 												<span id='" + elementID + "foldername' style='display: block; word-wrap: break-word; width: inherit; font-size: medium'>" + folderName + "</span>\
 												<div id='" + elementID + "OptionMenu' class='fileOptionMenu container-fluid hidden'>\
 													<div class='row'>\
-														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick=''>Open</button>\
-														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick=''>Delete</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick='promptOpenElement(" + '"' + folderName + '"' + ")'>Open</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick='deleteFromElement'>Delete</button>\
 													</div>\
 												</div>\
 											</div>\
@@ -208,7 +208,7 @@ $(document).ready(function () {
 								console.log("Error:updateFolderPane: entity error occurred");
 								break;
 							}
-						}
+						}""
 
 						// Only place elements on the UI when all files' html templates are configured (improves UI efficiency)
 						if (counter === currentDirectoryLedger.length - 1) {
@@ -803,21 +803,21 @@ $(document).ready(function () {
 			console.log($("#folderNameText").val());
 			var folderNameText = $("#folderNameText").val();
 
-			database.ref("folder/" + uid + "/" + currentDirectory).once("value").then(function (snapshot) {
+			database.ref("folder/" + uid +  currentDirectory).once("value").then(function (snapshot) {
 				var directoryContents = snapshot.val();
 				var nameOfStuff = Object.keys(directoryContents);
 				// console.log(nameOfStuff);
 				if (nameOfStuff.includes(folderNameText)) {
-					console.log(-1);
+					// console.log(-1);     //for debug
 					var errMsg = "Please choose another folder name";
 					$('#addFolderErrorMessage').html(errMsg);
 					$('#folderNameText').val('');
 				}
 				else {
-					database.ref("folder/" + uid +"/" + currentDirectory + "/" + folderNameText).set({
+					database.ref("folder/" + uid + currentDirectory + "/" + folderNameText).set({
 						'0' : 0
 					});
-					console.log("added");
+					// console.log("added");   //for debug
 					$('#folderNameText').val('');
 					$('#addFolderErrorMessage').hide();
 				}
@@ -825,3 +825,32 @@ $(document).ready(function () {
 
 		})
 	}
+
+	/*
+	 File Manager Utility: promptOpenElement
+	 Description:
+		 open a folder
+	 Expects:
+	 	N/A
+	 Parameters:
+	 	DNE for now
+	 Returns:
+	 	N/A
+	 */
+
+	function promptOpenElement(folderName) {
+		var folderName = folderName;
+		currentDirectory += bacpacEncode(folderName);
+		listDirectoryContent(user.data.uid, "/" + currentDirectory, database, updateFolderPane);
+	}
+
+
+	// function getParameterByName(name, url) {
+	// 	if (!url) url = window.location.href;
+	// 	name = name.replace(/[\[\]]/g, "\\$&");
+	// 	var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+	// 		results = regex.exec(url);
+	// 	if (!results) return null;
+	// 	if (!results[2]) return '';
+	// 	return decodeURIComponent(results[2].replace(/\+/g, " "));
+	// }
