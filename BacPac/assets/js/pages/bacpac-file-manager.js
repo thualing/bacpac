@@ -16,6 +16,12 @@ $(document).ready(function () {
 	});
 });
 
+$(document).on("keydown", function(event){
+	if(event.which === 13) {	// if the enter key was pressed
+		// Do nothing
+	}
+})
+
 /* Init */
 	// Google Firebase Initial Setup
 	var firebaseConfig = {
@@ -83,6 +89,11 @@ $(document).ready(function () {
 		// 	}
 		// });
 
+		/* Setup Initial stage of the path Tracker */
+		$("#homedestination").on("click", function() {
+			listDirectoryContent(user.data.uid, "/", database, updateFolderPane);	// when "Home" is clicked, the user is taken to the home directory
+		});
+
 		/* Init the user's front end file manager */
 		listDirectoryContent(user.data.uid, "/", database, updateFolderPane);
 
@@ -126,32 +137,25 @@ $(document).ready(function () {
 		// console.log("obj: " + currentDirectoryLedger[1]);	// debug
 
 		for(var i = 0; i < currentDirectoryLedger.length; i++) {
+			// console.log("length: " + currentDirectoryLedger.length);	// debug
 			switch(currentDirectoryLedger[i]) {
-				case "0": {		// ignore this directory identifier; it was used as an initializer and is irrelevant
+				case "0": {		// unless this is the only thing in the dir (i.e. dir is empty), ignore this directory identifier; it was used as an initializer and is irrelevant
+					if (currentDirectoryLedger.length <= 1) {	// if the dir is empty...
+						console.log("Directory is empty!");
+						var emptyDirSign = "<h1 style='text-align: center'>This directory is empty!</h1>";
+						insertIntoElement("fileManagerContent", emptyDirSign);		// populate folder content box
+					}
 					break;
 				}
 				default: {		// otherwise... process the files...
-					console.log("A: " + currentDirectoryLedger[i] + " B:" + database + " C: " + uid);	// debug
+					// console.log("A: " + currentDirectoryLedger[i] + " B:" + database + " C: " + uid);	// debug
 					distinguishEntity(currentDirectoryLedger[i], database, uid, function (result, key) {
 						switch (result) {
 							case "file": {
-								console.log(result + " " + key);	// debug
+								// console.log(result + " " + key);	// debug
 								var elementID = "file" + counter;
 								var elementDropdownID = "folder" + counter + "dropdown";
 								var fileName = decodeURIComponent(key);
-								// var fileNameHtmlSafe = fileName.replace(/'+/g, "%27").replace(/"+/g, "%22");
-
-								// Insert elements into the UI that are identifiable via unique ids (i.e. "file1, file2,..., fileN") and class "fileElement"
-								// these elements, when clicked, will call the function specified by the "onclick" attrubute
-
-								// Button
-								/*
-								fileElements += "<div class='dropdown'><button id='file" + i + "' type='button' class='fileElement btn btn-info btn-block dropdown-toggle' data-toggle='dropdown'>" + decodeURIComponent(key) + "</button><ul id='folder" + i + "dropdown' class='dropdown-menu'><li><a href='#'>HI</a></li></ul></div>";
-								*/
-
-								// Dropdown Option Menu
-								
-/*								fileElements += "<div class='dropdown col-xs-6 col-md-3' style='text-align: left'>    <div id='" + elementID + "' class='fileElement dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>    <a href='#' class='thumbnail row'>    <span class='glyphicon glyphicon-file' style='font-size: xx-large'></span>" + fileName + "</a>    </div>    <ul id='" + elementDropdownID + "' class='dropdown-menu' style='position: static'>    <li class='dropdown-header'>Options</li>    <li>    <a href='#'>Download</a>    </li>    <li>    <a href='#'>Properties</a>    </li>    <li>    <a href='#' style='color:red'>Delete</a>    </li>    </ul>    </div>";*/
 
 								// Custom 1
 								fileElements += "<div class='col-xs-6 col-md-3' style='padding-top: 10px'>\
@@ -165,7 +169,8 @@ $(document).ready(function () {
 														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick='promptDownloadFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Open/Download</button>\
 														<button class='fileOptionMenuBtn btn btn-block btn-info' onclick='promptShareFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Sharing</button>\
 														<button class='fileOptionMenuBtn btn btn-block btn-default' onclick='promptPropertiesFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Properties</button>\
-														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick='deleteFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Delete</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-warning' onclick='promptMoveFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Move</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick='promptDeleteFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Delete</button>\
 													</div>\
 												</div>\
 											</div>\
@@ -182,7 +187,9 @@ $(document).ready(function () {
 							}
 							case "folder": {
 								var elementID = "folder" + counter;
-								var folderName = decodeURIComponent(key);
+								var folderName = bacpacDecode(key);
+								var destination = currentDirectory + bacpacEncode(folderName) + "/";
+
 								// console.log(result + " " + key);	// debug
 								folderElements += "<div class='col-xs-6 col-md-3' style='padding-top: 10px'>\
 									<div id='" + elementID + "' class='fileElement' title='Click For File Options'>\
@@ -192,8 +199,8 @@ $(document).ready(function () {
 												<span id='" + elementID + "foldername' style='display: block; word-wrap: break-word; width: inherit; font-size: medium'>" + folderName + "</span>\
 												<div id='" + elementID + "OptionMenu' class='fileOptionMenu container-fluid hidden'>\
 													<div class='row'>\
-														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick=''>Open</button>\
-														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick=''>Delete</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick='downDirectory(" + '"' + elementID + '","' + destination + '"' + ")'>Open</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick='promptDeleteFolder(" + '"' + elementID + '","' + uid +'"' + ")'>Delete</button>\
 													</div>\
 												</div>\
 											</div>\
@@ -238,6 +245,7 @@ $(document).ready(function () {
 		switch($("#" + elemID + "OptionMenu").hasClass("hidden")) {
 			case true: {	// if a file's option menu is closed
 				$(".fileOptionMenu").addClass("hidden");	// close any other open file option menus before opening this one
+				$(".folderOptionMenu").addClass("hidden");	// close any other open folder option menus before opening this one
 				$("#" + elemID + "OptionMenu").removeClass("hidden");	// then open this one
 				break;
 			}
@@ -264,6 +272,7 @@ $(document).ready(function () {
 		switch($("#" + elemID + "OptionMenu").hasClass("hidden")) {
 			case true: {	// if a file's option menu is closed
 				$(".folderOptionMenu").addClass("hidden");	// close any other open file option menus before opening this one
+				$(".fileOptionMenu").addClass("hidden");	// close any other open file option menus before opening this one
 				$("#" + elemID + "OptionMenu").removeClass("hidden");	// then open this one
 				break;
 			}
@@ -288,7 +297,7 @@ $(document).ready(function () {
 			N/A
 */
 	function promptDownloadFromElement(elemID, userID) {
-		var fileName = $("#" + elemID + "filename").html();	// get file name from the inner html of the clicked file element
+		var fileName = ($("#" + elemID + "filename").html()).replace(/&amp;/g, "&");	// get file name from the inner html of the clicked file element
 		// console.log("Downloading " + fileName + " from " + elemID + " for user " + userID);	// debug
 
 		var fileRef = storage.ref("files/" + userID + "/" + fileName);
@@ -325,7 +334,7 @@ $(document).ready(function () {
 			N/A
 */
 	function promptShareFromElement(elemID, userID) {
-		var fileName = $("#" + elemID + "filename").html();
+		var fileName = ($("#" + elemID + "filename").html()).replace(/&amp;/g, "&");
 		console.log("Sharing " + fileName + " from " + elemID + " for user " + userID);	// debug
 		fileToShare = fileName;	// set the name of current file to be shared
 
@@ -397,6 +406,235 @@ $(document).ready(function () {
 		$("#sharingModalCancel").off("click");	// remove the click event of the Cancel button
 		$("#sharingModalCancel").on("click", cancelShareFromElement);	// add a listener for a click to cancel sharing
 		$("#sharingModal").modal("show");
+	}
+
+/* File Manager Utility: promptMoveFromElement
+		Description:
+			?
+		Expects:
+			(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+			"database" in it, and a firebase.storage(object) named "storage".
+		Parameters:
+			string elemID - the ID of the element representing the file to move
+			string userID - the current user's UID
+		Returns:
+			?
+*/
+	function promptMoveFromElement(elemID, userID) {
+		var fileName = ($("#" + elemID + "filename").html()).replace(/&amp;/g, "&");
+		console.log("Alert:promptMoveFromElement: Preparing to move " + fileName + " (owned by " + userID + ")");	// debug
+
+		// Place filename onto the header
+		$("#moveFileName").html(fileName);
+
+		// Setup modal close action
+		$("#moveFileModalCancel").off("click");
+		$("#moveFileModalCancel").on("click", function () {
+			$("#moveFileName").html("");	// clear header
+			$("#moveFileWarning").html("");	// clear modal warning section
+			$("#moveFileModal").modal("hide");	// hide modal
+		});
+
+		// Populate the file moving modal body with a fully interactable directory tree (listing only directories) to select from
+		database.ref("/folder/" + userID + "/").once("value").then(function (snapshot) {	// acquire a snapshot of the user's entire directory tree
+			// console.log(JSON.stringify(snapshot.val()));	// debug
+			
+			createDirectoryTreeFrom("", elemID, "moveFileDirectoryTree", "moveFilePathTracker", userID, database);	// create a dir. tree iface starting from the user's root directory
+		}).catch(function (error) {
+			console.log("Error:promptMoveFromElement: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");
+			return;
+		});
+
+		// Show the file moving modal
+		$("#moveFileModal").modal("show");
+	}
+
+/* File Manager Utility: createDirectoryTreeFrom
+		Description:
+			Create's a directory tree (and breadcrumb stream) showing ONLY directories from the specified user's directory tree location
+		Expects:
+			If dbRef is not specified:
+				(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+				"database" in it
+			The variable "currentDirectory" must exist and be initialized in the beginning of the code as an empty string.
+			Whenever the "currentDirectory" variable is changed, certain conditions must be met:
+				The first character MUST NOT be a "/" under ANY CIRCUMSTANCES.
+				If the "currentDirectory" is NOT EMPTY after the change, the last character MUST be a "/".
+				If the "currentDirectory" variable is changed to reflect the home directory, it must become an EMPTY STRING.
+		Parameters:
+			string location - the full path of the requested directory perspective within the current user's directory tree (IF NOT EMPTY, must have a "/" as a suffix, and not as a prefix!)
+			string elemID - the id of the file element representing the file to be moved
+			string treeID - the id of the html element to insert the directory tree interface into
+			string trackID - the id of the html element to insert the breadcrumb path tracker interface into
+			string userID - the current user's uid
+			FirebaseObject dbRef - the firebase.database() object
+*/
+	function createDirectoryTreeFrom(location, elemID, treeID, trackID, userID, dbRef) {
+		if (!userID || !treeID || !elemID || !trackID) {
+			console.log("Error:createDirectoryTreeFrom: Invalid Parameter(s)!");
+			console.log("userID: " + userID, " elemID: " + elemID + " treeID: " + treeID + " trackID: " + trackID);
+			return;
+		} else if (location[0] === "/") {
+			console.log("Error:createDirectoryTreeFrom: Invalid location! (has forward slash prefix)");
+			return;
+		} else if ((location !== "") && (location[location.length - 1] !== "/")) {
+			console.log("Error:createDirectoryTreeFrom: Invalid location! (missing forward slash suffix)");
+			return;
+		} else if (!dbRef) {
+			if (!database) {
+				console.log("Error:createDirectoryTreeFrom: Invalid firebase.database() reference!");
+				return;
+			} else {
+				dbRef = database;
+			}
+		}
+		var prevPath = currentDirectory;
+
+		// console.log("Current Location: " + location);	// debug
+
+		// populate the file
+		dbRef.ref("/folder/" + userID + "/" + location).once("value").then(function (snapshot) {
+			var directoryContents = snapshot.val();
+			var directoryKeys = Object.keys(directoryContents);
+			var folderElements = "";
+			var locationArray = location.split("/");	// get an array showing the path taken via the location
+			var breadcrumbPaths = "";
+			var breadcrumbs = "<li><a id='dirTreeHome' href='#' onclick='createDirectoryTreeFrom(" + '"","' + elemID + '","' + treeID + '","' + trackID + '","' + userID + '"' + ")'>Home</a></li>";
+
+			// console.log("directoryKeys: " + directoryKeys + " (" + directoryKeys.length + ")");	// debug
+
+			// insert path history breadcrumbs into the directory history path tracker
+			for (var k = 0; k < locationArray.length; k++) {
+				if (k === locationArray.length - 1) {	// if this is the last element (i.e. a "" string from the ".split()"), we're done; place all UI breadcrumbs to the directory path tracker
+					insertIntoElement("moveFilePathTracker", breadcrumbs);
+				} else {
+					// otherwise, continue compiling breadcrumb html
+					breadcrumbPaths += locationArray[k] + "/";
+					console.log("breadcrumbPaths: " + breadcrumbPaths);
+					breadcrumbs += "\
+					<li><a id='dirTreeHist" + k + "' href='#' onclick='createDirectoryTreeFrom(" + '"' + breadcrumbPaths + '","' + elemID + '","' + treeID + '","' + trackID + '","' + userID + '"' + ")'>\
+						" + bacpacDecode(locationArray[k]) +"\
+					</a></li>";
+				}
+			}
+
+			// insert folder selection elements into the directory tree
+			var emptyDirSign = "<h1 style='text-align: center;'>This directory is empty!</h1>";
+			var noFoldersSign = "<h1 style='text-align: center;'>This directory has no folders!</h1>";
+			for (var i = 0; i < directoryKeys.length; i++) {
+				switch (directoryKeys[i]) {
+					case "0": {
+						if (directoryKeys.length <= 1) {	// if the dir is empty (i.e. only contains the {0:0} entry)
+							console.log("Alert:createDirectoryTreeFrom: Directory is empty!");	// debug
+							var addHereElement = "<button class='btn btn-primary fileMoveDst' onclick='moveFile(" + '"' + elemID + '","' + location + '","' + prevPath + '","' + userID + '"' + ")'><span class='glyphicon glyphicon-plus'></span>Move Here</button>";
+							insertIntoElement(treeID, addHereElement + emptyDirSign);
+						}
+						break;
+					}
+					default: {
+						// console.log("looping: " + directoryKeys[i]);	// debug
+						distinguishEntity(directoryKeys[i], dbRef, userID, function (entityType, returnedkey) {
+							switch (entityType) {
+								case "folder": {
+									var addHereElement = "<button class='btn btn-primary fileMoveDst' onclick='moveFile(" + '"' + elemID  +'","' + location + '","' + prevPath + '","' + userID + '"' + ")'><span class='glyphicon glyphicon-plus'></span>Move Here</button>";
+
+									folderElements += "\
+									<button id='dirTreeElem" + i + "' class='btn btn-default fileMoveDst' onclick='createDirectoryTreeFrom(" + '"' + location + returnedkey + "/" + '","' + elemID + '","' + treeID + '","' + trackID + '","' + userID + '"' + ")'><span class='glyphicon glyphicon-folder-open' style='padding-right:10px'></span>" + bacpacDecode(returnedkey) + "\
+									</button>";
+
+									console.log("Alert:createDirectoryTreeFrom: Inserting into directory tree...");
+									insertIntoElement(treeID, addHereElement + folderElements);
+									break;
+								}
+								default: {
+									// console.log("Skipping entity '" + entityType + "'...");	// debug
+									
+									var addHereElement = "<button class='btn btn-primary fileMoveDst' onclick='moveFile(" + '"' + elemID  +'","' + location + '","' + prevPath + '","' + userID + '"' + ")'><span class='glyphicon glyphicon-plus'></span>Move Here</button>";
+
+									// if this is the last element, and the folderElements view is still empty, this file probably isn't empty, but doesn't have any folders in it...
+									if (folderElements.length === 0) {
+										insertIntoElement(treeID, addHereElement + noFoldersSign);
+									}
+									break;
+								}
+							}
+						});
+					}
+				}
+			}
+			// console.log(locationArray);	// debug
+			// console.log(locationArray.length);	// debug
+		});
+	}
+
+/* File Manager Utility: moveFile
+		Description:
+			Performs the necessary database queries to move to selected file to the relevant location in the file system
+			Once finished, refreshes the directory content view
+		Expects:
+			(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+			"database" in it
+		Parameters:
+			string elemID - the id of the file element representing the file to be moved
+			string path - the desired full path within the user's directory tree to move the file (must NOT have a "/" prefix, but MUST have a "/" suffix)
+			string oldPath - the previous full path within the user's directory tree to move the file (must NOT have a "/" prefix, but MUST have a "/" suffix)
+			string userID - the current user's uid
+		Returns:
+			N/A
+*/
+	function moveFile(elemID, path, oldPath, userID){
+		if (!userID || !elemID) {
+			console.log("Error:createDirectoryTreeFrom: Invalid Parameter(s)!");
+			console.log("userID: " + userID, " elemID: " + elemID + " treeID: " + treeID + " trackID: " + trackID);
+			return;
+		} else if (path[0] === "/" || oldPath[0] === "/") {
+			console.log("Error:createDirectoryTreeFrom: Invalid path/oldPath! (has forward slash prefix)");
+			return;
+		} else if (((path !== "") && (path[path.length - 1] !== "/")) || ((oldPath !== "") && (oldPath[oldPath.length - 1] !== "/"))) {
+			console.log("Error:createDirectoryTreeFrom: Invalid path/oldPath! (missing forward slash suffix)");
+			return;
+		} else {
+			if (!database) {
+				console.log("Error:createDirectoryTreeFrom: Invalid firebase.database() reference!");
+				return;
+			}
+		}
+
+		if (path === oldPath) {
+			$("#moveFileWarning").html("<h3>Your file already exists here...</h3>");
+			console.log("Error:createDirectoryTreeFrom: The source and destination paths are identical!");
+			return;
+		}
+
+		var fileName = ($("#" + elemID + "filename").html()).replace(/&amp;/g, "&");
+		console.log("Alert:moveFile: Moving user '" + userID + "'s file '" + fileName + "' to '" + path + "'");
+
+		// First, acquire the previous data of the file in question
+		database.ref("/folder/" + userID + "/" + oldPath + bacpacEncode(fileName)).once("value").then(function (snapshot) {
+			var fileData = snapshot.val();
+
+			// Compile updates, then update the file's path records in "/folder"
+			var updates = {};
+			updates["/folder/" + userID + "/" + path + bacpacEncode(fileName)] = fileData;	// copy the old data into the new location
+			updates["/folder/" + userID + "/" + oldPath + bacpacEncode(fileName)] = null;	// erase the old data from the old location
+			database.ref().update(updates).then(function () {
+				console.log("Alert:moveFile: File was moved successfully!");
+
+				// Clear and close file move modal
+				$("#moveFileName").html("");	// clear header
+				$("#moveFileWarning").html("");	// clear modal warning section
+				$("#moveFileModal").modal("hide");	// hide modal
+
+				// Refresh the user's directory view
+				listDirectoryContent(userID, "/" + currentDirectory , database, updateFolderPane);
+				return;
+			}).catch(function (error) {
+				console.log("Error:moveFile: Internal Error Occurred! [in updating records] [" + error.code + " (" + error.message + ")]");
+				return;
+			});
+		}).catch(function (error) {
+			console.log("Error:moveFile: Internal Error Occurred! [in getting previous records] [" + error.code + " (" + error.message + ")]");
+		});
 	}
 
 /* File Manager Utility: cancelShareFromElement
@@ -584,7 +822,7 @@ $(document).ready(function () {
 			N/A
 */
 	function promptPropertiesFromElement(elemID, userID) {
-		var fileName = $("#" + elemID + "filename").html();	// get file name from the inner html of the clicked file element
+		var fileName = ($("#" + elemID + "filename").html()).replace(/&amp;/g, "&");	// get file name from the inner html of the clicked file element
 
 		var fileRef = storage.ref("files/" + userID + "/" + fileName);
 		fileRef.getMetadata().then(function(metadata) {
@@ -607,7 +845,7 @@ $(document).ready(function () {
 		Expects:
 			?
 		Parameters:
-			string key - the key name of a fileName/folderName (a key provided by the database)
+			string key - the unecoded key name of a fileName/folderName (a key provided by the database)
 			FirebaseObject dbRef - a reference to the firebase.database() object
 			string uid - the current user's uid
 			Function callback - a callback to run after execution; it is passed the entity type 
@@ -734,6 +972,7 @@ $(document).ready(function () {
 			console.log("Error:listDirectoryContent: callback is not a function!");
 			return false;
 		}
+		console.log("currentDirectory = " + currentDirectory);
 		dbRef.ref("/folder/" + uid + fullPath).once("value").then(function(snapshot){
 			callback(snapshot.val());
 		}).catch(function(error){
@@ -795,28 +1034,377 @@ $(document).ready(function () {
 			N/A
 	 */
 	function setupAddFolderButton() {
+		// Setup add folder button action
 		$("#addFolder").click(function (event) {
+			$("#fileOptionsMenu").addClass("hidden");
 			$("#addFolderModal").modal('show');
 		});
+
+		// Setup modal close button actions
+		$("#makeFolderButtonClose").off("click");
+		$("#makeFolderButtonClose").on("click", function () {
+			$("#addFolderModalWarning").html("");	// clear the warning text
+			$("#folderNameText").val("");	// clear the input field
+			$("#addFolderModal").modal("hide");	// close the add Folder modal
+		});
+
+		// Setup make folder button actions
 		$("#makeFolderButton").click(function (event) {
 			console.log($("#folderNameText").val());
-			var folderNameText = $("#folderNameText").val();
+			var folderNameText = $("#folderNameText").val();	// grab text from the text box
+			var encodedFolderNameText = bacpacEncode(folderNameText);
 
-			database.ref("folder/" + uid + "/" + currentDirectory).once("value").then(function (snapshot) {
-				var directoryContents = snapshot.val();
-				var nameOfStuff = Object.keys(directoryContents);
-				// console.log(nameOfStuff);
-				if (nameOfStuff.includes(folderNameText)) {
-					console.log(-1);
-				}
-				else {
-					database.ref("folder/" + uid +"/" + currentDirectory + "/" + folderNameText).set({
-						'0' : 0
+			if ((folderNameText.length === 1) && (folderNameText.search(/^[0-9]/) !== -1)) {	// if the first character in the folder name is a number, complain
+				$("#addFolderModalWarning").html("Folder names cannot be a single numeric character!");
+				console.log("Error:setupAddFolderButton: Invalid file Name (cannot start with a number)");
+			} else {
+				database.ref("folder/" + uid + "/" + currentDirectory).once("value").then(function (snapshot) {	// else, check to see if the folder already exists
+					var directoryContents = snapshot.val();
+					var nameOfStuff = Object.keys(directoryContents);	// acquire the list of files and folders within the directory
+
+					// If the folder name is taken by any file or folder in the directory...
+					if (nameOfStuff.includes(encodedFolderNameText)) {
+						$("#addFolderModalWarning").html("This name is already taken!");
+						console.log("Alert:setupAddFolderButton: Duplicate folder found! Consider a different name...");
+					}
+
+					// Else, add the folder
+					else {
+						console.log("Alert:setupAddFolderButton: Adding empty folder to the current directory: '/" + currentDirectory + "'");
+						database.ref("folder/" + uid +"/" + currentDirectory + encodedFolderNameText).set({
+							0 : 0
+						}).then(function() {
+							console.log("Alert:setupAddFolderButton: Successfully added empty folder!");
+							console.log("Alert:setupAddFolderButton: Reloading Directory Display... ");
+
+							// Reload the user's front end file manager
+							listDirectoryContent(user.data.uid, "/" + currentDirectory , database, updateFolderPane);
+
+							// Close the add Folder modal
+							$("#makeFolderButtonClose").click();
+						}).catch(function(error) {
+							console.log("Error:setupAddFolderButton: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");
+						});
+					}
+				});
+			}
+		});
+	}
+
+/* File Manager Utility: promptDeleteFromElement
+	Description:
+		Launches a modal warning the user about permanent deletion of file content.
+		If approved, permanently deletes the file from the Firebase Database records, removes it from storage, then reloads the user's directory view
+	Expects:
+		The element with id "elemID" must represent a file element in the UI (i.e. it must have the css class "fileElement")
+		(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+			"database" in it, and a firebase.storage(object) named "storage".
+	Parameters:
+		string elemID - the ID of the element representing the file to delete
+		string userID - the current user's uid
+	Returns:
+		?
+*/
+	function promptDeleteFromElement(elemID, userID) {
+		var fileName = ($("#" + elemID + "filename").html()).replace(/&amp;/g, "&");	// since the html encodes "&" with "&amp;", we must resolve this!
+		console.log("Preparing to Delete file!");
+
+		// Setup warning content
+		$("#filenameToDelete").html("<h2>Are you sure you want to delete file '" + fileName + "'?</h2>\
+			<h5 style='color:red;'>It will be permanently deleted from your BacPac...</h5>");
+		$("#deleteModal").modal("show");
+
+		// Setup confirm button action
+		$("#deleteModalConfirm").off("click");
+		$("#deleteModalConfirm").on("click", function () {
+			// delete the file from the database
+			deleteFile(fileName, userID, database, storage);
+
+			// reload the directory view
+			listDirectoryContent(userID, "/" + currentDirectory , database, updateFolderPane);
+
+			// reset modal
+			$("#filenameToDelete").html("");
+			$("#deleteModal").modal("hide");
+			$("#deleteModal").modal("hide");
+		});
+
+		// Setup additional cancel button actions
+		$("#deleteModalCancel").off("click");
+		$("#deleteModalCancel").on("click", function () {
+			$("#filenameToDelete").html("");
+			$("#deleteModal").modal("hide");
+			console.log("Cancelling Deletion...");
+		});
+	}
+
+/* File Manager Utility: deleteFile
+		Description:
+			Deletes the selected file from the database
+		Expects:
+			The variable "currentDirectory" must exist and be initialized in the beginning of the code as an empty string.
+			Whenever the "currentDirectory" variable is changed, certain conditions must be met:
+				The first character MUST NOT be a "/" under ANY CIRCUMSTANCES.
+				If the "currentDirectory" is NOT EMPTY after the change, the last character MUST be a "/".
+				If the "currentDirectory" variable is changed to reflect the home directory, it must become an EMPTY STRING.
+		Parameters:
+			string file - the unencoded name of the file to delete
+			string userID - the current user's uid
+			FirebaseObject dbRef - the firebase.database() object
+			FirebaseObject stRef - the firebase.storage() object
+		Returns:
+			?
+*/
+	function deleteFile(file, userID, dbRef, stRef) {
+		if (!file || !userID || !dbRef || !stRef) {
+			console.log("Error:deleteFile: Invalid Parameter(s)");
+			return;
+		} else if (file === "") {
+			console.log("Error:deleteFile: file not specified!");
+			return;
+		}
+		var encodedFileName = bacpacEncode(file);
+		console.log("Alert:deleteFile: Permanently deleting file '" + file + "' (" + encodedFileName + ") from BacPac servers...");
+
+		// remove records of the file from the current user's (and shared users') database sections
+		dbRef.ref("/folder/" + userID + "/" + currentDirectory + encodedFileName).remove().then(function(){	// delete from /folder
+			console.log("Alert:deleteFile: Successfully deleted file's folder record...");
+			dbRef.ref("/fileName/" + userID + "/" + encodedFileName).remove().then(function(){	// delete from /fileName
+				console.log("Alert:deleteFile: Successfully deleted file's fileName record...");
+				dbRef.ref("/fileAttribute/" + userID + "/" + encodedFileName).remove().then(function(){	// delete from /fileAttribute
+					console.log("Alert:deleteFile: Successfully deleted file's fileAttribute record...");
+
+					// Unshare the file from whoever it's shared with (since it's deleted)
+					dbRef.ref("/shared/" + userID + "/withOtherUsers/" + encodedFileName).once("value").then(function(snapshot) {	// acquire full list of users who are shared the file
+						var sharingList = snapshot.val();	// get the JSON of the entire sharing list for this file
+						var arrayOfUids;
+
+						// if the file was NOT shared with anyone (i.e. snapshot.val() === null), skip this part, since we won't need to delete from anybody's sharing list
+						if (!sharingList) {
+							console.log("Alert:deleteFile: Deleted file was not shared with anyone... ");
+							return;
+						} else {
+							arrayOfUids = Object.keys(sharingList);	// get the keys
+
+							// destroy the current user's sharing record; we won't need it in the db anymore, since we copied it to var sharingList above
+							dbRef.ref("/shared/" + userID + "/withOtherUsers/" + encodedFileName).remove().then(function () {
+								console.log("Alert:deleteFile: Successfully deleted file from your sharing records...");
+							}).catch(function (error) {
+								console.log("Error:deleteFile: Internal Error Occurred! [database remove(/withOtherUsers/encodedFileName)] [" + error.code + " (" + error.message + ")]");
+							});
+
+							// at the same time, for each user that this file is shared with, remove their shared entries
+							arrayOfUids.forEach(function (currentUid, currentIndex, returnedArray) {
+								dbRef.ref("/shared/" + currentUid + "/fromOtherUsers/" + userID + "/" + encodedFileName).remove().then(function() {	// remove the file from peoples' sharing record
+									if (currentIndex === returnedArray.length - 1) {
+										console.log("Alert:deleteFile: Successfully removed sharing history from other users' accounts...");
+									}
+								}).catch(function (error) {
+									console.log("Error:deleteFile: Internal Error Occurred! [database remove(/fromOtherUsers/...)] [" + error.code + " (" + error.message + ")]");
+								});
+							});
+							return;
+						}
+					}).catch(function (error) {
+						console.log("Error:deleteFile: Internal Error Occurred! [database get(sharingList)] [" + error.code + " (" + error.message + ")]");
 					});
-					console.log("added");
-				}
+				}).catch(function (error) {
+					console.log("Error:deleteFile: Internal Error Occurred! [database->/fileAttribute] [" + error.code + " (" + error.message + ")]");
+				});
+			}).catch(function (error) {
+				console.log("Error:deleteFile: Internal Error Occurred! [database->/fileName] [" + error.code + " (" + error.message + ")]");
 			});
+		}).catch(function (error) {
+			console.log("Error:deleteFile: Internal Error Occurred! [database->/folder] [" + error.code + " (" + error.message + ")]");
+		});
 
+		// remove the file from storage
+		stRef.ref("files/" + userID + "/" + file).delete().then(function() {
+			console.log("Alert:deleteFile: Successfully removed file from your BacPac storage");
+		}).catch(function (error) {
+			console.log("Error:deleteFile: Internal Error Occurred! [storage] [" + error.code + " (" + error.message + ")]");
+			return;
+		});
+	}
 
-		})
+/* File Manager Utility: promptDeleteFolder
+		Description:
+			Immediately deletes a folder if it is empty, else asks the user to confirm via a modal if it is ok to delete sub folders
+		Expects:
+			The variable "currentDirectory" must exist and be initialized in the beginning of the code as an empty string.
+			(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+			"database" in it, and a firebase.storage(object) named "storage".
+			Whenever the "currentDirectory" variable is changed, certain conditions must be met:
+				The first character MUST NOT be a "/" under ANY CIRCUMSTANCES.
+				If the "currentDirectory" is NOT EMPTY after the change, the last character MUST be a "/".
+				If the "currentDirectory" variable is changed to reflect the home directory, it must become an EMPTY STRING.
+		Parameters:
+			string elemID - the id of the folder element
+			string userID - the current user's uid
+		Returns:
+			N/A
+*/
+	function promptDeleteFolder(elemID, userID) {
+		var folderName = ($("#" + elemID + "foldername").html()).replace(/&amp;/g, "&");	// allows folders to contain ampersands
+		var encodedFolderName = bacpacEncode(folderName);
+		console.log("currentDirectory: '" + currentDirectory + "'");	// debug
+		console.log("Alert:promptDeleteFolder: Preparing to delete folder '" + folderName + "' (" + encodedFolderName + ")");	// debug
+
+		database.ref("/folder/" + userID + "/" + currentDirectory + encodedFolderName).once("value").then(function(snapshot) {
+			var folderContents = snapshot.val();
+			var namesOfFilesAndFolders = Object.keys(folderContents);
+			console.log("Alert:promptDeleteFolder: Contents - " + JSON.stringify(snapshot.val()));	// debug
+
+			console.log(namesOfFilesAndFolders);
+
+			// If the only thing within the clicked folder is the initializer (i.e. "0": 0), delete the folder
+			if (namesOfFilesAndFolders.length === 0 || (namesOfFilesAndFolders.length === 1 && namesOfFilesAndFolders[0] === "0")) {
+				console.log("Alert:promptDeleteFolder: Folder is empty; Deleting...");	// debug
+
+				database.ref("/folder/" + userID + "/" + currentDirectory + encodedFolderName).remove().then(function(){
+					console.log("Alert:promptDeleteFolder: Folder successfully deleted...");	// debug
+
+					// Reload the 
+					listDirectoryContent(user.data.uid, "/" + currentDirectory, database, updateFolderPane);
+				}).catch(function (error) {
+					console.log("Error:promptDeleteFolder: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");	// debug
+				});
+			}
+
+			// Else, prompt the user before doing so
+			else {
+				console.log("Alert:promptDeleteFolder: Folder is not empty!");	// debug
+				// Insert the warning
+				$("#deleteFolderModalBody").html("<h2>Are you sure you want to delete folder '" + folderName + "'?</h2><p style='color:red;'>The folder is not empty!</p>");
+				
+				// Define what to do when the cancel button is clicked...
+				$("#deleteFolderModalCancel").off("click");
+				$("#deleteFolderModalCancel").on("click", function() {
+					$("#deleteFolderModal").modal("hide");
+				});
+
+				// Define what to do when the confirm button is clicked...
+				$("#deleteFolderModalConfirm").off("click");
+				$("#deleteFolderModalConfirm").on("click", function() {
+					$("#deleteFolderModal").modal("hide");
+					// deleteFolderWithContents();
+				});
+
+				// Show modal
+				$("#deleteFolderModal").modal("show");
+			}
+		});
+	}
+
+/* File Manager Utility: downDirectory
+		Description:
+			Goes down a directory after the click of a folder element's Open button
+		Expects:
+			The variable "currentDirectory" must exist and be initialized in the beginning of the code as an empty string.
+			Whenever the "currentDirectory" variable is changed, certain conditions must be met:
+				The first character MUST NOT be a "/" under ANY CIRCUMSTANCES.
+				If the "currentDirectory" is NOT EMPTY after the change, the last character MUST be a "/".
+				If the "currentDirectory" variable is changed to reflect the home directory, it must become an EMPTY STRING.
+		Parameters:
+			string elemID - the id of the file element that was clicked
+			string dest - the destination directory (must be a full path, with NO BEGINNING "/")
+		Returns:
+			N/A
+*/
+	function downDirectory(elemID, dest) {
+		var folderName = ($("#" + elemID + "foldername").html()).replace(/&amp;/g, "&");
+		console.log("currentDirectory: '" + currentDirectory + "'");	// debug
+		console.log("Alert:downDirectory: Changing directory to '" + folderName + "' (/" + dest + ")");
+
+		currentDirectory = dest;
+
+		updatePathTracker("pathTracker", dest);
+
+		listDirectoryContent(user.data.uid, "/" + currentDirectory, database, updateFolderPane);
+	}
+
+/* File Manager Utility: upDirectory
+		Description:
+			Goes up a directory after the click of a path tracker link
+		Expects:
+			The variable "currentDirectory" must exist and be initialized in the beginning of the code as an empty string.
+			Whenever the "currentDirectory" variable is changed, certain conditions must be met:
+				The first character MUST NOT be a "/" under ANY CIRCUMSTANCES.
+				If the "currentDirectory" is NOT EMPTY after the change, the last character MUST be a "/".
+				If the "currentDirectory" variable is changed to reflect the home directory, it must become an EMPTY STRING.
+		Parameters:
+			string levelNum - the level of depth within a user's directory tree
+		Returns:
+			N/A
+*/
+	function upDirectory(levelNum) {
+		var dest;
+
+		if (levelNum === 0) dest = "";
+		else dest = $("#level" + levelNum).attr("title");
+
+		console.log("Alert:upDirectory: Going up to " + dest);	// debug
+
+		currentDirectory = dest;
+
+		updatePathTracker("pathTracker", dest);
+
+		listDirectoryContent(user.data.uid, "/" + currentDirectory, database, updateFolderPane);
+	}
+
+/* File Manager Utility: updatePathTracker
+		Description:
+			Updates the path tracker list so that the user can navigate up the file tree
+		Expects:
+			The path tracker is ASSUMED to be an "<ol>" element.
+			The variable "currentDirectory" must exist and be initialized in the beginning of the code as an empty string.
+			Whenever the "currentDirectory" variable is changed, certain conditions must be met:
+				The first character MUST NOT be a "/" under ANY CIRCUMSTANCES.
+				If the "currentDirectory" is NOT EMPTY after the change, the last character MUST be a "/".
+				If the "currentDirectory" variable is changed to reflect the home directory, it must become an EMPTY STRING.
+		Parameters:
+			string pathTrackerID - the id of the path tracker
+			string fullPath - the full path in the user's directory tree (must be a full path, with NO BEGINNING "/")
+		Returns:
+			N/A
+*/
+	function updatePathTracker(pathTrackerID, fullPath) {
+		if(!pathTrackerID) {
+			console.log("Error:updatePathTracker: Invalid Parameter(s)");
+			return;
+		} else if (typeof pathTrackerID !== "string" || typeof fullPath !== "string") {
+			console.log("Error:updatePathTracker: Type Error!");
+			return;
+		} else if (fullPath[0] === "/") {
+			console.log("Error:updatePathTracker: Invalid fullPath parameter (has forward slash prefix)!");
+			return;
+		} else if ((fullPath.length > 0) && (fullPath[fullPath.length-1] !== "/")) {
+			console.log("Error:updatePathTracker: Invalid fullPath parameter (missing forward slash suffix)!");
+			return;
+		}
+		
+		// Count the number of "/" characters in the destination string to determine how many levels have been traversed
+		var breadcrumbs = "<li><a id='level0' onclick='upDirectory(0)' href='#'>Home</a></li>";
+		var bArr = [];
+		var sub = fullPath;
+		var levels = sub.split("/");
+		var incrementalPaths = "";
+
+		console.log("sub: " + levels + " " + levels.length);	// debug
+		bArr.push(breadcrumbs);
+
+		for (var i = 0; i < levels.length; i++) {
+			if (i === levels.length-1){	// when the last element has been placed, update the pathTracker
+				console.log(bArr/*.toString().replace(/,/g, "")*/);	// debug
+				$("#" + pathTrackerID).html(bArr.toString().replace(/,/g, ""));
+				return;
+			}
+			incrementalPaths += levels[i] + "/";
+
+			var tempStr = "<li><a id='level" + (i + 1) + "' onclick='upDirectory(" + (i + 1) + ")' href='#' title='" + incrementalPaths + "'>" + bacpacDecode(levels[i]) + "</li>";
+			breadcrumbs += tempStr;
+			bArr.push(tempStr);
+			// console.log("breadcrumbs: " + breadcrumbs);
+			// console.log("    bArr: " + bArr);
+		}
 	}

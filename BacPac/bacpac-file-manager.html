@@ -479,7 +479,7 @@
 								</div> -->
 
 								<ol id="pathTracker" class="breadcrumb">
-									<li><a href="#">Home</a></li>
+									<li><a id="homedestination" href="#">Home</a></li>
 								</ol>
 
 								<!-- start: File Manager -->
@@ -546,11 +546,12 @@
 				</div>
 				<div class="modal-body">
 					<div>
-						Folder Name: <input type="text" name="folderName" value="" id="folderNameText"><br>
+						Folder Name: <input type="text" class="form-control" name="folderName" value="" id="folderNameText"><br>
 					</div>
+					<div id="addFolderModalWarning" style="color: red;"></div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+					<button id="makeFolderButtonClose" type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
 					<button type="button" class="btn btn-primary" id="makeFolderButton">Make Folder</button>
 				</div>
 			</div><!-- /.modal-content -->
@@ -602,6 +603,28 @@
 	</div>
 	<!-- end: Properties Modal -->
 
+	<!-- start: Move File Modal -->
+	<div class="modal fade" id="moveFileModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					Move File <span id="moveFileName"></span>
+				</div>
+				<div id="moveFileModalBody" class="modal-body">
+					<ol id="moveFilePathTracker" class='breadcrumb'>
+						<li><a id="dirTreeHome" href="#">Home</a></li>
+					</ol>
+					<div id="moveFileDirectoryTree"></div>
+					<div id="moveFileWarning" style="color:red;"></div>
+				</div>
+				<div class="modal-footer">
+					<button id="moveFileModalCancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Move File Modal -->
+
 	<!-- begin: Sharing Modal -->
 	<div class="modal fade" id="sharingModal">
 		<div class="modal-dialog">
@@ -630,7 +653,45 @@
 		</div>
 	</div>
 	<!-- end: Sharing Modal -->
+
+	<!-- start: Delete File Modal -->
+	<div class="modal fade" id="deleteModal">
+		<div class="modal-dialog">
+			<div class="modal-content deleteModalContent">
+				<div class="modal-header">
+					File Deletion
+				</div>
+				<div id="deleteModalBody" class="modal-body deleteModalContentBody">
+					<div id="filenameToDelete"></div>
+				</div>
+				<div class="modal-footer">
+					<button id="deleteModalCancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button id="deleteModalConfirm" type="button" class="btn btn-danger">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Delete File Modal -->
 	
+	<!-- start: Delete Folder Modal -->
+	<div class="modal fade" id="deleteFolderModal">
+		<div class="modal-dialog">
+			<div class="modal-content deleteFolderModalContent">
+				<div class="modal-header">
+					Folder Deletion
+				</div>
+				<div id="deleteFolderModalBody" class="modal-body deleteFolderModalContentBody">
+					<div id="foldernameToDelete"></div>
+				</div>
+				<div class="modal-footer">
+					<button id="deleteFolderModalCancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button id="deleteFolderModalConfirm" type="button" class="btn btn-danger">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Delete Folder Modal -->
+
 	<div class="clearfix"></div>
 	
 	<!-- start: Footer -->
