@@ -114,99 +114,88 @@
             var thead = document.getElementsByTagName('thead')[0];
             var i;
             database.ref("roster/").once('value').then(function (snapshot) {
-              //  for (var l = 0; l < 10; l++) {
-                    var info1 = Object.keys(snapshot.val());//list of emails
-                    console.log(info1[1]);//displays list of emails
-               //     database.ref(info1 + "uid").once('value').then(function (snapshot) {
-                 //       console.log(snapshot.val());
-                        database.ref("shared/").once('value').then(function (snapshot) {
-                            var useremail = [];
+                var info1 = Object.keys(snapshot.val());//list of emails
+                console.log(info1);//displays list of emails
+                database.ref("shared/").once('value').then(function (snapshot) {
+                    var useremail = [];
+       
+                    // database.ref("/shared/" + uid + "/fromOtherUsers/").once('value').then(function (snapshot) {
+                    for (i = 0; i <100; i++) {
+                   
+                       
+                        var email = [];
+                  
+                        var info = snapshot.child(uid + "/fromOtherUsers/").val();//hold other user's id
+                        console.log(snapshot.child(uid + "/fromOtherUsers/").val());
+                        var otherid = Object.keys(info)[i];//other user's id
+                       if (otherid == undefined)
+                          break;
+                        console.log(otherid);//displaying other user's id
+                        var tr = document.createElement('tr');//make row
+                        var td2 = document.createElement('td');//make cell in row// cell with email
+                        var td = document.createElement('td');// cell with file name
+                        var one = snapshot.child(uid + "/fromOtherUsers/" + otherid).val();//uid from formotherusers
+                        
+                        console.log(one);
+                        var filenames = Object.keys(one);//array of filenames
+                        console.log(filenames);//array of filenames
+                        for (var j = 0; j < filenames.length; j++) {
+                            // var email = one[uids[i]];//only giving 1st uid in array
+                            //var email = one[filenames[j]];
+                            email.push(one[filenames[j]]);
+                            // email.push(one[uids[j]]);
+                            //    console.log(JSON.stringify(one[uids[j]]));
+                            //  td2.innerText = email;
+                            //  td2.innerText = email;
+                            
+                        }
+                 
 
-                            // database.ref("/shared/" + uid + "/fromOtherUsers/").once('value').then(function (snapshot) {
-                            for (i = 0; i < 100; i++) {
+                        
 
+                        td2.innerText = email;
+                        //  }
+                        // var emails = Object.keys(snapshot.child("/roster/").val());//array of emails
+                        // console.log(emails);//emails = list of user's emails
+                        // var decoded = decodeURIComponent(otherid);//individual id
+                        //  console.log(decoded);//list invididual id
+                        //   if (emails.hasOwnProperty(otherid[i]))
+                        // {
+                        //   console.log(emails[i]);
+                        //}
+                        // var usernames  = Object.keys(snapshot.child("/roster/").child(emails).val());
+                        //  console.log(usernames);
+                        console.log(email);
+                 
 
-                                var email = [];
-
-                                var info = snapshot.child(uid + "/fromOtherUsers/").val();//hold other user's id
-                                console.log(snapshot.child(uid + "/fromOtherUsers/").val());
-                                var otherid = Object.keys(info)[i];//other user's id
-                                if (otherid == undefined)
-                                    break;
-                                console.log(otherid);//displaying other user's id
-                                var tr = document.createElement('tr');//make row
-                                var td2 = document.createElement('td');//make cell in row// cell with email
-                                var td = document.createElement('td');// cell with file name
-                                var one = snapshot.child(uid + "/fromOtherUsers/" + otherid).val();//uid from formotherusers
-
-                                console.log(one);
-                                var filenames = Object.keys(one);//array of filenames
-                                console.log(filenames);//array of filenames
-                                for (var j = 0; j < filenames.length; j++) {
-                                    // var email = one[uids[i]];//only giving 1st uid in array
-                                    //var email = one[filenames[j]];
-                                    email.push(one[filenames[j]]);
-                                    // email.push(one[uids[j]]);
-                                    //    console.log(JSON.stringify(one[uids[j]]));
-                                    //  td2.innerText = email;
-                                    //  td2.innerText = email;
-
-                                }
-
-
-
-
-                                td2.innerText = email;
-                                //  }
-
-                                console.log(email);
-
-
-                                tr.appendChild(td2);
-                                thead.appendChild(tr);
-
-                                //     initTabs(user);
-                                var ouids = Object.keys(snapshot.val());//uids from roster
-                                console.log(ouids);//display array of uids
-                                console.log(decodeURIComponent(ouids.indexOf(otherid)));//posiiton of uid
-                                //  var value = new Array();
-                                var ten = ouids.indexOf(otherid);
-                                var indexvalue = info1[ten];
-                                console.log(indexvalue);
-                                // var string3 = filename.replace('%2E', '.').replace('%20', '');
-                                /*    for (var l = 0; l < 5; l++)
-                                     {
-                                     if (ouids[l].hasOwnProperty(otherid))
-                                     {
-                                         console.log('yes');
-                                         
-                                     }
-                                     break;
-                                     }*/
-                                function search(nameKey, myArray) {
-                                    for (var i = 0; i < myArray.length; i++) {
-                                        if (myArray[i].name === nameKey) {
-                                            return myArray[i];
-                                        }
-                                    }
-                                }
-                                // var email = one[uids[i]];//only giving 1st uid in array
-                                //var email = one[filenames[j]];
-                                //useremail.push(one[otherid[i]]);
-                                // email.push(one[uids[j]]);
-                                //    console.log(JSON.stringify(one[uids[j]]));
-                                //  td2.innerText = email;
-                                //  td2.innerText = email;
-
-                                td.innerText = otherid;//otheruserid
-                                tr.appendChild(td);
-                                //   })
-
+                        tr.appendChild(td2);
+                        thead.appendChild(tr);
+           
+                        //     initTabs(user);
+                        var ouids = Object.keys(snapshot.val());//uids from roster
+                        console.log(ouids);//display array of uids
+                        // var string3 = filename.replace('%2E', '.').replace('%20', '');
+                        if (ouids[i].hasOwnProperty(otherid))
+                        {
+                            console.log('yes');
+                          //     console.log(info[i]);
                             }
-                        })
-                    })
-             //   }  //  thead.appendChild(tr);
-           // })
+                        // var email = one[uids[i]];//only giving 1st uid in array
+                        //var email = one[filenames[j]];
+                        //useremail.push(one[otherid[i]]);
+                        // email.push(one[uids[j]]);
+                        //    console.log(JSON.stringify(one[uids[j]]));
+                        //  td2.innerText = email;
+                        //  td2.innerText = email;
+                 
+                        td.innerText = otherid;//otheruserid
+                        tr.appendChild(td);
+                        //   })
+                    
+                    }
+                })
+                //  thead.appendChild(tr);
+            })
         }
 
         function thatishared() {
