@@ -16,6 +16,12 @@ $(document).ready(function () {
 	});
 });
 
+$(document).on("keydown", function(event){
+	if(event.which === 13) {	// if the enter key was pressed
+		// Do nothing
+	}
+})
+
 /* Init */
 	// Google Firebase Initial Setup
 	var firebaseConfig = {
@@ -163,6 +169,7 @@ $(document).ready(function () {
 														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick='promptDownloadFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Open/Download</button>\
 														<button class='fileOptionMenuBtn btn btn-block btn-info' onclick='promptShareFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Sharing</button>\
 														<button class='fileOptionMenuBtn btn btn-block btn-default' onclick='promptPropertiesFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Properties</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-warning' onclick='promptMoveFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Move</button>\
 														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick='promptDeleteFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Delete</button>\
 													</div>\
 												</div>\
@@ -401,6 +408,235 @@ $(document).ready(function () {
 		$("#sharingModal").modal("show");
 	}
 
+/* File Manager Utility: promptMoveFromElement
+		Description:
+			?
+		Expects:
+			(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+			"database" in it, and a firebase.storage(object) named "storage".
+		Parameters:
+			string elemID - the ID of the element representing the file to move
+			string userID - the current user's UID
+		Returns:
+			?
+*/
+	function promptMoveFromElement(elemID, userID) {
+		var fileName = ($("#" + elemID + "filename").html()).replace(/&amp;/g, "&");
+		console.log("Alert:promptMoveFromElement: Preparing to move " + fileName + " (owned by " + userID + ")");	// debug
+
+		// Place filename onto the header
+		$("#moveFileName").html(fileName);
+
+		// Setup modal close action
+		$("#moveFileModalCancel").off("click");
+		$("#moveFileModalCancel").on("click", function () {
+			$("#moveFileName").html("");	// clear header
+			$("#moveFileWarning").html("");	// clear modal warning section
+			$("#moveFileModal").modal("hide");	// hide modal
+		});
+
+		// Populate the file moving modal body with a fully interactable directory tree (listing only directories) to select from
+		database.ref("/folder/" + userID + "/").once("value").then(function (snapshot) {	// acquire a snapshot of the user's entire directory tree
+			// console.log(JSON.stringify(snapshot.val()));	// debug
+			
+			createDirectoryTreeFrom("", elemID, "moveFileDirectoryTree", "moveFilePathTracker", userID, database);	// create a dir. tree iface starting from the user's root directory
+		}).catch(function (error) {
+			console.log("Error:promptMoveFromElement: Internal Error Occurred! [" + error.code + " (" + error.message + ")]");
+			return;
+		});
+
+		// Show the file moving modal
+		$("#moveFileModal").modal("show");
+	}
+
+/* File Manager Utility: createDirectoryTreeFrom
+		Description:
+			Create's a directory tree (and breadcrumb stream) showing ONLY directories from the specified user's directory tree location
+		Expects:
+			If dbRef is not specified:
+				(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+				"database" in it
+			The variable "currentDirectory" must exist and be initialized in the beginning of the code as an empty string.
+			Whenever the "currentDirectory" variable is changed, certain conditions must be met:
+				The first character MUST NOT be a "/" under ANY CIRCUMSTANCES.
+				If the "currentDirectory" is NOT EMPTY after the change, the last character MUST be a "/".
+				If the "currentDirectory" variable is changed to reflect the home directory, it must become an EMPTY STRING.
+		Parameters:
+			string location - the full path of the requested directory perspective within the current user's directory tree (IF NOT EMPTY, must have a "/" as a suffix, and not as a prefix!)
+			string elemID - the id of the file element representing the file to be moved
+			string treeID - the id of the html element to insert the directory tree interface into
+			string trackID - the id of the html element to insert the breadcrumb path tracker interface into
+			string userID - the current user's uid
+			FirebaseObject dbRef - the firebase.database() object
+*/
+	function createDirectoryTreeFrom(location, elemID, treeID, trackID, userID, dbRef) {
+		if (!userID || !treeID || !elemID || !trackID) {
+			console.log("Error:createDirectoryTreeFrom: Invalid Parameter(s)!");
+			console.log("userID: " + userID, " elemID: " + elemID + " treeID: " + treeID + " trackID: " + trackID);
+			return;
+		} else if (location[0] === "/") {
+			console.log("Error:createDirectoryTreeFrom: Invalid location! (has forward slash prefix)");
+			return;
+		} else if ((location !== "") && (location[location.length - 1] !== "/")) {
+			console.log("Error:createDirectoryTreeFrom: Invalid location! (missing forward slash suffix)");
+			return;
+		} else if (!dbRef) {
+			if (!database) {
+				console.log("Error:createDirectoryTreeFrom: Invalid firebase.database() reference!");
+				return;
+			} else {
+				dbRef = database;
+			}
+		}
+		var prevPath = currentDirectory;
+
+		// console.log("Current Location: " + location);	// debug
+
+		// populate the file
+		dbRef.ref("/folder/" + userID + "/" + location).once("value").then(function (snapshot) {
+			var directoryContents = snapshot.val();
+			var directoryKeys = Object.keys(directoryContents);
+			var folderElements = "";
+			var locationArray = location.split("/");	// get an array showing the path taken via the location
+			var breadcrumbPaths = "";
+			var breadcrumbs = "<li><a id='dirTreeHome' href='#' onclick='createDirectoryTreeFrom(" + '"","' + elemID + '","' + treeID + '","' + trackID + '","' + userID + '"' + ")'>Home</a></li>";
+
+			// console.log("directoryKeys: " + directoryKeys + " (" + directoryKeys.length + ")");	// debug
+
+			// insert path history breadcrumbs into the directory history path tracker
+			for (var k = 0; k < locationArray.length; k++) {
+				if (k === locationArray.length - 1) {	// if this is the last element (i.e. a "" string from the ".split()"), we're done; place all UI breadcrumbs to the directory path tracker
+					insertIntoElement("moveFilePathTracker", breadcrumbs);
+				} else {
+					// otherwise, continue compiling breadcrumb html
+					breadcrumbPaths += locationArray[k] + "/";
+					console.log("breadcrumbPaths: " + breadcrumbPaths);
+					breadcrumbs += "\
+					<li><a id='dirTreeHist" + k + "' href='#' onclick='createDirectoryTreeFrom(" + '"' + breadcrumbPaths + '","' + elemID + '","' + treeID + '","' + trackID + '","' + userID + '"' + ")'>\
+						" + bacpacDecode(locationArray[k]) +"\
+					</a></li>";
+				}
+			}
+
+			// insert folder selection elements into the directory tree
+			var emptyDirSign = "<h1 style='text-align: center;'>This directory is empty!</h1>";
+			var noFoldersSign = "<h1 style='text-align: center;'>This directory has no folders!</h1>";
+			for (var i = 0; i < directoryKeys.length; i++) {
+				switch (directoryKeys[i]) {
+					case "0": {
+						if (directoryKeys.length <= 1) {	// if the dir is empty (i.e. only contains the {0:0} entry)
+							console.log("Alert:createDirectoryTreeFrom: Directory is empty!");	// debug
+							var addHereElement = "<button class='btn btn-primary fileMoveDst' onclick='moveFile(" + '"' + elemID + '","' + location + '","' + prevPath + '","' + userID + '"' + ")'><span class='glyphicon glyphicon-plus'></span>Move Here</button>";
+							insertIntoElement(treeID, addHereElement + emptyDirSign);
+						}
+						break;
+					}
+					default: {
+						// console.log("looping: " + directoryKeys[i]);	// debug
+						distinguishEntity(directoryKeys[i], dbRef, userID, function (entityType, returnedkey) {
+							switch (entityType) {
+								case "folder": {
+									var addHereElement = "<button class='btn btn-primary fileMoveDst' onclick='moveFile(" + '"' + elemID  +'","' + location + '","' + prevPath + '","' + userID + '"' + ")'><span class='glyphicon glyphicon-plus'></span>Move Here</button>";
+
+									folderElements += "\
+									<button id='dirTreeElem" + i + "' class='btn btn-default fileMoveDst' onclick='createDirectoryTreeFrom(" + '"' + location + returnedkey + "/" + '","' + elemID + '","' + treeID + '","' + trackID + '","' + userID + '"' + ")'><span class='glyphicon glyphicon-folder-open' style='padding-right:10px'></span>" + bacpacDecode(returnedkey) + "\
+									</button>";
+
+									console.log("Alert:createDirectoryTreeFrom: Inserting into directory tree...");
+									insertIntoElement(treeID, addHereElement + folderElements);
+									break;
+								}
+								default: {
+									// console.log("Skipping entity '" + entityType + "'...");	// debug
+									
+									var addHereElement = "<button class='btn btn-primary fileMoveDst' onclick='moveFile(" + '"' + elemID  +'","' + location + '","' + prevPath + '","' + userID + '"' + ")'><span class='glyphicon glyphicon-plus'></span>Move Here</button>";
+
+									// if this is the last element, and the folderElements view is still empty, this file probably isn't empty, but doesn't have any folders in it...
+									if (folderElements.length === 0) {
+										insertIntoElement(treeID, addHereElement + noFoldersSign);
+									}
+									break;
+								}
+							}
+						});
+					}
+				}
+			}
+			// console.log(locationArray);	// debug
+			// console.log(locationArray.length);	// debug
+		});
+	}
+
+/* File Manager Utility: moveFile
+		Description:
+			Performs the necessary database queries to move to selected file to the relevant location in the file system
+			Once finished, refreshes the directory content view
+		Expects:
+			(Will turn into a parameter in future:) The function ASSUMES that the code has a firebase.database() object named
+			"database" in it
+		Parameters:
+			string elemID - the id of the file element representing the file to be moved
+			string path - the desired full path within the user's directory tree to move the file (must NOT have a "/" prefix, but MUST have a "/" suffix)
+			string oldPath - the previous full path within the user's directory tree to move the file (must NOT have a "/" prefix, but MUST have a "/" suffix)
+			string userID - the current user's uid
+		Returns:
+			N/A
+*/
+	function moveFile(elemID, path, oldPath, userID){
+		if (!userID || !elemID) {
+			console.log("Error:createDirectoryTreeFrom: Invalid Parameter(s)!");
+			console.log("userID: " + userID, " elemID: " + elemID + " treeID: " + treeID + " trackID: " + trackID);
+			return;
+		} else if (path[0] === "/" || oldPath[0] === "/") {
+			console.log("Error:createDirectoryTreeFrom: Invalid path/oldPath! (has forward slash prefix)");
+			return;
+		} else if (((path !== "") && (path[path.length - 1] !== "/")) || ((oldPath !== "") && (oldPath[oldPath.length - 1] !== "/"))) {
+			console.log("Error:createDirectoryTreeFrom: Invalid path/oldPath! (missing forward slash suffix)");
+			return;
+		} else {
+			if (!database) {
+				console.log("Error:createDirectoryTreeFrom: Invalid firebase.database() reference!");
+				return;
+			}
+		}
+
+		if (path === oldPath) {
+			$("#moveFileWarning").html("<h3>Your file already exists here...</h3>");
+			console.log("Error:createDirectoryTreeFrom: The source and destination paths are identical!");
+			return;
+		}
+
+		var fileName = ($("#" + elemID + "filename").html()).replace(/&amp;/g, "&");
+		console.log("Alert:moveFile: Moving user '" + userID + "'s file '" + fileName + "' to '" + path + "'");
+
+		// First, acquire the previous data of the file in question
+		database.ref("/folder/" + userID + "/" + oldPath + bacpacEncode(fileName)).once("value").then(function (snapshot) {
+			var fileData = snapshot.val();
+
+			// Compile updates, then update the file's path records in "/folder"
+			var updates = {};
+			updates["/folder/" + userID + "/" + path + bacpacEncode(fileName)] = fileData;	// copy the old data into the new location
+			updates["/folder/" + userID + "/" + oldPath + bacpacEncode(fileName)] = null;	// erase the old data from the old location
+			database.ref().update(updates).then(function () {
+				console.log("Alert:moveFile: File was moved successfully!");
+
+				// Clear and close file move modal
+				$("#moveFileName").html("");	// clear header
+				$("#moveFileWarning").html("");	// clear modal warning section
+				$("#moveFileModal").modal("hide");	// hide modal
+
+				// Refresh the user's directory view
+				listDirectoryContent(userID, "/" + currentDirectory , database, updateFolderPane);
+				return;
+			}).catch(function (error) {
+				console.log("Error:moveFile: Internal Error Occurred! [in updating records] [" + error.code + " (" + error.message + ")]");
+				return;
+			});
+		}).catch(function (error) {
+			console.log("Error:moveFile: Internal Error Occurred! [in getting previous records] [" + error.code + " (" + error.message + ")]");
+		});
+	}
+
 /* File Manager Utility: cancelShareFromElement
 		Description:
 			Performs the necessary cleanup when cancelling the share function
@@ -609,7 +845,7 @@ $(document).ready(function () {
 		Expects:
 			?
 		Parameters:
-			string key - the key name of a fileName/folderName (a key provided by the database)
+			string key - the unecoded key name of a fileName/folderName (a key provided by the database)
 			FirebaseObject dbRef - a reference to the firebase.database() object
 			string uid - the current user's uid
 			Function callback - a callback to run after execution; it is passed the entity type 
@@ -800,6 +1036,7 @@ $(document).ready(function () {
 	function setupAddFolderButton() {
 		// Setup add folder button action
 		$("#addFolder").click(function (event) {
+			$("#fileOptionsMenu").addClass("hidden");
 			$("#addFolderModal").modal('show');
 		});
 

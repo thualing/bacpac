@@ -603,6 +603,28 @@
 	</div>
 	<!-- end: Properties Modal -->
 
+	<!-- start: Move File Modal -->
+	<div class="modal fade" id="moveFileModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					Move File <span id="moveFileName"></span>
+				</div>
+				<div id="moveFileModalBody" class="modal-body">
+					<ol id="moveFilePathTracker" class='breadcrumb'>
+						<li><a id="dirTreeHome" href="#">Home</a></li>
+					</ol>
+					<div id="moveFileDirectoryTree"></div>
+					<div id="moveFileWarning" style="color:red;"></div>
+				</div>
+				<div class="modal-footer">
+					<button id="moveFileModalCancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Move File Modal -->
+
 	<!-- begin: Sharing Modal -->
 	<div class="modal fade" id="sharingModal">
 		<div class="modal-dialog">
