@@ -18,6 +18,9 @@
 .fileOptionMenuBtn {
 	font-style: none;
 }
+.fileMoveDst {
+	width: 100%;
+}
 
 /* Share Modal Styles */
 .sharingModalContent {
@@ -32,4 +35,9 @@
 }
 .sharingModalUserQueueButton {
 	width: 100%
+}
+
+/* file options */
+.fileOptionButton {
+
 }

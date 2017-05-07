@@ -462,7 +462,12 @@
 							<div class="box-header">
 								<h2><i class="fa fa-picture-o"></i> File Manager</h2>
 								<div class="box-icon">
-									<a href="file-manager.html#" class="btn-setting"><i class="fa fa-wrench"></i></a>
+									<a href="bacpac-file-manager.html#" class="fileOptionButton" id="optionsButton"><i class="fa fa-plus"></i></a>
+									<div id="fileOptionsMenu" class="hidden">
+										<button id="addFolder" class="btn btn-success" type="button">
+											Add Folder
+										</button>
+									</div>
 									<!-- <a href="file-manager.html#" class="btn-minimize"><i class="fa fa-chevron-up"></i></a> -->
 									<!-- <a href="file-manager.html#" class="btn-close"><i class="fa fa-times"></i></a> -->
 								</div>
@@ -474,21 +479,21 @@
 								</div> -->
 
 								<ol id="pathTracker" class="breadcrumb">
-									<li><a href="#">Home</a></li>
+									<li><a id="homedestination" href="#">Home</a></li>
 								</ol>
 
 								<!-- start: File Manager -->
 								<div id="fileManager" class="container-fluid">
 									<div class="row">
 										<!-- <div id="fileManagerFoldersPane" class="col-md-3 well box-content clearfix list-group"> -->
-										<div class="col-md-3 container-fluid">
-											<div class="row panel panel-info">
-												<div class="panel-header"><span class="label label-info" style="display:block">Navigator</span></div>
-												<div id="fileManagerFoldersPane" class="panel-body">
-
-												</div>
-											</div>
-										</div>
+										<!--<div class="col-md-3 container-fluid">-->
+											<!--<div class="row panel panel-info">-->
+												<!--<div class="panel-header"><span class="label label-info" style="display:block">Navigator</span></div>-->
+												<!--<div id="fileManagerFoldersPane" class="panel-body">-->
+<!---->
+												<!--</div>-->
+											<!--</div>-->
+										<!--</div>-->
 										<div class=" container-fluid">
 											<div id="fileManagerContent" class="row well" style="overflow: scroll">
 
@@ -510,6 +515,7 @@
 	</div><!--/container-->
 	<!-- end: Container -->
 
+
 	<!-- start: Modal -->
 	<div class="modal fade" id="myModal">
 		<div class="modal-dialog">
@@ -529,6 +535,29 @@
 		</div><!-- /.modal-dialog -->
 	</div><!-- /.modal -->
 	<!-- end: Modal -->
+
+	<!-- start: Add Folder Modal -->
+	<div class="modal fade" id="addFolderModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Add Folder</h4>
+				</div>
+				<div class="modal-body">
+					<div>
+						Folder Name: <input type="text" class="form-control" name="folderName" value="" id="folderNameText"><br>
+					</div>
+					<div id="addFolderModalWarning" style="color: red;"></div>
+				</div>
+				<div class="modal-footer">
+					<button id="makeFolderButtonClose" type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="makeFolderButton">Make Folder</button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+	<!-- end: Add Folder Modal -->
 
 	<!-- start: Download Modal -->
 	<div class="modal fade" id="downloadModal">
@@ -574,6 +603,28 @@
 	</div>
 	<!-- end: Properties Modal -->
 
+	<!-- start: Move File Modal -->
+	<div class="modal fade" id="moveFileModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					Move File <span id="moveFileName"></span>
+				</div>
+				<div id="moveFileModalBody" class="modal-body">
+					<ol id="moveFilePathTracker" class='breadcrumb'>
+						<li><a id="dirTreeHome" href="#">Home</a></li>
+					</ol>
+					<div id="moveFileDirectoryTree"></div>
+					<div id="moveFileWarning" style="color:red;"></div>
+				</div>
+				<div class="modal-footer">
+					<button id="moveFileModalCancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Move File Modal -->
+
 	<!-- begin: Sharing Modal -->
 	<div class="modal fade" id="sharingModal">
 		<div class="modal-dialog">
@@ -602,7 +653,45 @@
 		</div>
 	</div>
 	<!-- end: Sharing Modal -->
+
+	<!-- start: Delete File Modal -->
+	<div class="modal fade" id="deleteModal">
+		<div class="modal-dialog">
+			<div class="modal-content deleteModalContent">
+				<div class="modal-header">
+					File Deletion
+				</div>
+				<div id="deleteModalBody" class="modal-body deleteModalContentBody">
+					<div id="filenameToDelete"></div>
+				</div>
+				<div class="modal-footer">
+					<button id="deleteModalCancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button id="deleteModalConfirm" type="button" class="btn btn-danger">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Delete File Modal -->
 	
+	<!-- start: Delete Folder Modal -->
+	<div class="modal fade" id="deleteFolderModal">
+		<div class="modal-dialog">
+			<div class="modal-content deleteFolderModalContent">
+				<div class="modal-header">
+					Folder Deletion
+				</div>
+				<div id="deleteFolderModalBody" class="modal-body deleteFolderModalContentBody">
+					<div id="foldernameToDelete"></div>
+				</div>
+				<div class="modal-footer">
+					<button id="deleteFolderModalCancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button id="deleteFolderModalConfirm" type="button" class="btn btn-danger">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end: Delete Folder Modal -->
+
 	<div class="clearfix"></div>
 	
 	<!-- start: Footer -->

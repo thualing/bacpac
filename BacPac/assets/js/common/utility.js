@@ -195,3 +195,11 @@ function setupLogoutProtocol(logoutButtonID, dbRef, authRef, callback) {
 function bacpacEncode(str) {
     return encodeURIComponent(str).replace(/\./g, "%2E").replace(/\$/g, "%24").replace(/\[/g, "%5B").replace(/\]/g, "%5D").replace(/#/g, "%23").replace(/\//g, "%2F").replace(/%40/g, "@");
 }
+
+/* Universal Utility: bacpacDecode
+        Description:
+            Performs the reverse operation of bacpacEncode
+*/
+function bacpacDecode(str) {
+    return decodeURIComponent(str).replace(/%2E/g, ".").replace(/%24/g, "$").replace(/%5B/g, "[").replace(/%5D/g, "]").replace(/%23/g, "#").replace(/%2F/g, "/");
+}
