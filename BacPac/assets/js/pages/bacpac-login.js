@@ -232,6 +232,9 @@ Don't use strict mode; there are possible browser compatilibity issues
 		initRefs["roster/" + bacpacEncode(user.email)] = {	// init user's roster entry
 			uid: user.uid
 		};
+		initRefs["roster/" + user.uid] = {	// init user's reversed roster entry
+			email: bacpacEncode(user.email)
+		};
 		initRefs["shared/" + user.uid] = {		// init user's shared with me folder
 			fromOtherUsers: {
 				"0": 0
