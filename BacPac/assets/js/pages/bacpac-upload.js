@@ -304,6 +304,9 @@ function rsdCallback(data){
         }
         default: {
             // all clear; login is valid
+            auth.currentUser.reload();
+            console.log("photoURL: " + data.photoURL);
+            $("#profilePicture").attr("src", data.photoURL);
             applyProfileData("profileUsername", data.email);
             return true;
             break;

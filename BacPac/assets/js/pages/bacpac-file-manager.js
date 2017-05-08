@@ -371,29 +371,28 @@ $(document).on("keydown", function(event){
 				var resultHTML = "";
 				var matchCount = 0;
 
+				// Clear the sharing Modal Search Display
+				var noUsersFound = "<p style='color:white; font-style:oblique;'>No Users Found</p>";
+				insertIntoElement("sharingModalUserDisplay", noUsersFound);		// if no matches are found, this will be all that remains in the box
+
 				// Sift through the usernames for partial/complete matches to searchTerm and place partial/complete matches into the user display
 				usernames.forEach(function(uname, unameIndex, returnedArray){
+					if(!uname.includes("@")){	// since roster now includes a list of uids:emails in conjunction with emails:uids, ignore the former, and count the latter
+						// use the "@" to distinguish between email:uid pairs and uid:email pairs. If a uid:email pair is encountered, do nothing...
+						console.log(uname + " is not an email!");
+						return;
+					}
+					console.log(uname + " is an email!");
+
 					if (uname.includes(searchTerm)) {	// if there's a match, place it in the UI in the following button template:
 						matchCount++;
+
+						if (!matchCount) insertIntoElement("sharingModalUserDisplay", "");
+
 						resultHTML += "\
 						<button class='btn btn-info' style='width:100%' onclick='addUserToShare(" + '"' + elemID + '",' + '"' + userID + '",' + '"' + decodeURIComponent(uname) + '",' + '"' + snapshot.val()[uname]["uid"] + '"' + ")'>\
 							" + decodeURIComponent(uname) + "\
 						</button>";
-					}
-
-					// if this is the last element in the username array, output resultHTML to the UI
-					if (unameIndex === returnedArray.length - 1) {
-						switch(resultHTML){	// if no matches were found
-							case "": {
-								console.log("User not found...");
-								resultHTML = "<p style='color:white; font-style:oblique;'>No Users Found</p>";
-								break;
-							}
-							default: {
-								console.log("There are " + matchCount + " matches");
-								break;
-							}
-						}
 						insertIntoElement("sharingModalUserDisplay", resultHTML);
 					}
 				});
@@ -1075,16 +1074,16 @@ $(document).on("keydown", function(event){
 										</div>\
 									</div>";
 									appendIntoElement(shareAreaID, fileToAdd);
-								})
+								}).catch(function (error) {
+									console.log("Error:listFilesSharedWithMe: Internal Error Occurred! [" + error.code + " (" + error.message +")]");
+									return;
+								});
 							});
 							break;
 						}
 					}
 				});
 			}
-		}).catch(function (error) {
-			console.log("Error:listFilesSharedWithMe: Internal Error Occurred! [" + error.code + " (" + error.message +")]");
-			return;
 		});
 	}
 
@@ -1122,6 +1121,8 @@ $(document).on("keydown", function(event){
 			}
 			default: {
 				// all clear; login is valid
+				console.log("photoURL: " + data.photoURL);
+				$("#profilePicture").attr("src", data.photoURL);
 				applyProfileData("profileUsername", data.email);
 				main();		// run page
 				return true;
