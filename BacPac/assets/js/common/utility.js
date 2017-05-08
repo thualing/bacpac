@@ -172,7 +172,7 @@ function setupLogoutProtocol(logoutButtonID, dbRef, authRef, callback) {
             console.log("Session Ended...");
             authRef.signOut().then(function(){
                 console.log("Signing Out");
-                window.location = ("bacpac-login.html");
+                window.location = ("index.html");
             }).catch(function(error){
                 console.log(error);
             });
