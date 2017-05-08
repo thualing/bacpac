@@ -24,13 +24,13 @@ var user = {data:""};
         case null: {
             // not found
             console.log("Error: User ID not found");
-            window.location = "bacpac-login.html";
+            window.location = "index.html";
             break;
         }
         case '': {
             // invalid found
             console.log("Error: User ID not found");
-            window.location = "bacpac-login.html";
+            window.location = "index.html";
             break;
         }
         default: {
@@ -251,7 +251,7 @@ $("#logoutBtn").on("click", function(){
         console.log("Session Ended...");
         auth.signOut().then(function(){
             console.log("Signing Out");
-            window.location = ("bacpac-login.html");
+            window.location = ("index.html");
         }).catch(function(error){
             console.log(error);
         });
@@ -284,21 +284,21 @@ function applyProfileData(elemID, data) {
 function rsdCallback(data){
     if (!data) {
         console.log("Error:rsdCallback: invalid session");
-        window.location = "bacpac-login.html";
+        window.location = "index.html";
         return false;
     };
     switch(data.uid) {
         case null: {
             // not found
             console.log("Error: User ID not found");
-            window.location = "bacpac-login.html";
+            window.location = "index.html";
             return false;
             break;
         }
         case '': {
             // invalid found
             console.log("Error: User ID not found");
-            window.location = "bacpac-login.html";
+            window.location = "index.html";
             return false;
             break;
         }
