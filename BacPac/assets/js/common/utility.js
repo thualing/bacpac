@@ -166,6 +166,7 @@ function setupLogoutProtocol(logoutButtonID, dbRef, authRef, callback) {
         console.log("Error:setupLogoutProtocol: invalid element ID");
         return false;
     }
+
     /* Action: Logout Button click */
     $("#" + logoutButtonID).on("click", function() {
         dbRef.ref("/sessions/" + user.data.uid).remove().then(function(){

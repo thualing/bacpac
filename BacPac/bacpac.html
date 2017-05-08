@@ -20,6 +20,8 @@
 	<link href="assets/css/retina.min.css" rel="stylesheet">
 	<!-- end: CSS -->
 
+	<!-- Google Firebase Setup -->
+	<script src="https://www.gstatic.com/firebasejs/3.7.1/firebase.js"></script>
 
 	<!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
 	<!--[if lt IE 9]>
@@ -65,7 +67,7 @@
 			<div class="nav-no-collapse header-nav">
 				<ul class="nav navbar-nav pull-right">
 					<!-- start: Notifications Dropdown -->
-					<li class="dropdown hidden-xs">
+					<!-- <li class="dropdown hidden-xs">
 						<a class="btn dropdown-toggle" data-toggle="dropdown" href="bacpac.html#">
 							<i class="fa fa-warning"></i>
 						</a>
@@ -147,11 +149,11 @@
                         		<a>View all notifications</a>
 							</li>
 						</ul>
-					</li>
+					</li> -->
 					<!-- end: Notifications Dropdown -->
 
 					<!-- start: Tasks Dropdown -->
-					<li class="dropdown hidden-xs">
+					<!-- <li class="dropdown hidden-xs">
 						<a class="btn dropdown-toggle" data-toggle="dropdown" href="index.html#">
 							<i class="fa fa-tasks"></i>
 						</a>
@@ -208,11 +210,11 @@
                         		<a class="dropdown-menu-sub-footer">View all tasks</a>
 							</li>
 						</ul>
-					</li>
+					</li> -->
 					<!-- end: Tasks Dropdown -->
 
 					<!-- start: Message Dropdown -->
-					<li class="dropdown hidden-xs">
+					<!-- <li class="dropdown hidden-xs">
 						<a class="btn dropdown-toggle" data-toggle="dropdown" href="index.html#">
 							<i class="fa fa-envelope"></i>
 						</a>
@@ -304,11 +306,11 @@
                         		<a class="dropdown-menu-sub-footer">View all messages</a>
 							</li>
 						</ul>
-					</li>
+					</li> -->
 					<!-- end: Message Dropdown -->
 
 					<!-- start: Options Dropdown -->
-					<li class="dropdown hidden-xs">
+					<!-- <li class="dropdown hidden-xs">
 						<a class="btn dropdown-toggle" data-toggle="dropdown" href="bacpac.html#">
 							<i class="fa fa-wrench"></i>
 						</a>
@@ -326,25 +328,25 @@
 								<a href="#">Option3</a>
 							</li>
 						</ul>
-					</li>
+					</li> -->
 					<!-- end: Options Dropdown -->
 
 					<!-- start: User Dropdown -->
 					<li class="dropdown">
 						<a class="btn account dropdown-toggle" data-toggle="dropdown" href="bacpac.html#">
-							<div class="avatar"><img src="assets/img/avatar.jpg" alt="Avatar"></div>
+							<div class="avatar"><img id="profilePicture" src="" alt="Avatar"></div>
 
 							<!-- User Greeting -->
 							<div class="user">
 								<span class="hello">User:</span>
-								<span class="name">Some Username</span>
+								<span id="profileUsername" class="name">Some Username</span>
 							</div>
 						</a>
 						<ul class="dropdown-menu">
 							<li class="dropdown-menu-title">
 
 							</li>
-							<li>
+							<!-- <li>
 								<a href="bacpac.html#">
 									<i class="fa fa-user"></i>
 									Profile
@@ -361,9 +363,9 @@
 									<i class="fa fa-envelope"></i>
 									Messages
 								</a>
-							</li>
+							</li> -->
 							<li>
-								<a href="bacpac-login.html">
+								<a href="index.html">
 									<i class="fa fa-off"></i>
 									Logout
 								</a>
@@ -415,30 +417,6 @@
 							</a>
 						</li>
 
-						<!-- Tab 4: Sharing Status -->
-						<li>
-							<a class="bacpacTab" href="bacpac-share-status.html">
-								<i class="fa fa-bar-chart-o"></i>
-								<span class="hidden-sm"> Share Status</span>
-							</a>
-						</li>
-
-						<!-- Tab 5: Recent -->
-						<li>
-							<a class="bacpacTab" href="bacpac-recent.html">
-								<i class="fa fa-exclamation"></i>
-								<span class="hidden-sm"> Recent</span>
-							</a>
-						</li>
-
-						<!-- Tab 6: Trash -->
-						<li>
-							<a class="bacpacTab" href="bacpac-trash.html">
-								<i class="fa fa-trash-o"></i>
-								<span class="hidden-sm"> Trash</span>
-							</a>
-						</li>
-
 						<!-- Tab N: Some Application -->
 						<!-- <li>
 							<a href="">
@@ -453,7 +431,36 @@
 
 			<!-- start: Content -->
 			<div id="content" class="col-lg-10 col-sm-11">
-				
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="box">
+							<div class="box-header">
+								<h2><i class="glyphicon glyphicon-user"></i> Dashboard</h2>
+							</div>
+							<div class="box-content clearfix">
+								<div class="well">
+									<div class="container-fluid">
+										<div class="row">
+											<div class='col-xs-6'>
+												<span class="badge" style="width:100%">Your username: </span>
+												<h1 id="dashboardEmail" style="float: center"></h1>
+											</div>
+											<div class="col-xs-6">
+												<span class="badge" style="width:100%">Your profile picture:</span>
+												<h1 style="width:100%">
+													<a href="#" class="thumbnail">
+														<img id="dashboardPhoto" src="">
+													</a>
+												</h1>
+												<button id="dashboardChangePhotoButton" class="btn btn-primary">Change Profile Picture</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div> <!-- end: col -->
+				</div>
 			</div>
 			<!-- end: Content -->
 		</div><!--/row-->
@@ -466,13 +473,18 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title">Modal title</h4>
+					<h4 class="modal-title">Edit Profile Picture</h4>
 				</div>
 				<div class="modal-body">
-					<p>Here settings can be configured...</p>
+					<div class="container-fluid">
+						<div class="row">
+							<p>Select a picture from your personal images</p>
+							<div id="photoselectionArea"></div>
+						</div>
+					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button id="myModalClose" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 					<button type="button" class="btn btn-primary">Save changes</button>
 				</div>
 			</div><!-- /.modal-content -->
@@ -541,6 +553,7 @@
 		<script src="assets/js/core.min.js"></script>
 
 		<!-- inline scripts related to this page -->
+		<script type="text/javascript" src="assets/js/common/utility.js"></script>
 		<script src="assets/js/pages/bacpac.js"></script>
 	<!-- end: JavaScript-->
 
