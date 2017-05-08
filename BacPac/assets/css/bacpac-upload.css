@@ -48,4 +48,5 @@ input[type=file] {
 .btn.btn-primary {
     background-color: #00a8ff;
     border-color: #00a8ff;
+    margin-bottom: 14px;
 }

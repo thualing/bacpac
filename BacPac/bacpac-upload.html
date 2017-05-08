@@ -337,7 +337,7 @@
 							<!-- User Greeting -->
 							<div class="user">
 								<span class="hello">User:</span>
-								<span class="profileUsername">Some Username</span>
+								<span id="profileUsername" class="name"></span>
 							</div>
 						</a>
 						<ul class="dropdown-menu">
@@ -363,7 +363,7 @@
 								</a>
 							</li>
 							<li>
-								<a href="bacpac-login.html">
+								<a id="logoutBtn" href="index.html">
 									<i class="logoutBtn"></i>
 									Logout
 								</a>
@@ -393,7 +393,7 @@
 					<ul class="nav nav-tabs nav-stacked main-menu">
 						<!-- Tab 1: Dashboard -->
 						<li>
-							<a href="bacpac.html">
+							<a class="bacpacTab" href="bacpac.html">
 								<i class="fa fa-bar-chart-o"></i>
 								<span class="hidden-sm"> Dashboard</span>
 							</a>
@@ -401,7 +401,7 @@
 
 						<!-- Tab 2: File Manager -->
 						<li>
-							<a href="bacpac-file-manager.html">
+							<a class="bacpacTab" href="bacpac-file-manager.html">
 								<i class="fa fa-folder-open"></i>
 								<span class="hidden-sm"> Files</span>
 							</a>
@@ -409,7 +409,7 @@
 
 						<!-- Tab 3: Uploader -->
 						<li>
-							<a href="bacpac-upload.html">
+							<a class="bacpacTab" href="bacpac-upload.html">
 								<i class="fa fa-cloud-upload"></i>
 								<span class="hidden-sm"> Upload</span>
 							</a>
@@ -417,7 +417,7 @@
 
 						<!-- Tab 4: Sharing Status -->
 						<li>
-							<a href="bacpac-share-status.html">
+							<a class="bacpacTab" href="bacpac-share-status.html">
 								<i class="fa fa-bar-chart-o"></i>
 								<span class="hidden-sm"> Share Status</span>
 							</a>
@@ -425,7 +425,7 @@
 
 						<!-- Tab 5: Recent -->
 						<li>
-							<a href="bacpac-recent.html">
+							<a class="bacpacTab" href="bacpac-recent.html">
 								<i class="fa fa-exclamation"></i>
 								<span class="hidden-sm"> Recent</span>
 							</a>
@@ -433,7 +433,7 @@
 
 						<!-- Tab 6: Trash -->
 						<li>
-							<a href="">
+							<a class="bacpacTab" href="bacpac-trash.html">
 								<i class="fa fa-trash-o"></i>
 								<span class="hidden-sm"> Trash</span>
 							</a>
@@ -457,24 +457,20 @@
 					<div class="col-lg-12">
 						<div class="box">
 							<div class="box-header">
-								<h2><i class="fa fa-edit"></i>Dropzone.js</h2>
-								<div class="box-icon">
-									<a href="bacpac-upload.html" class="btn-setting"><i class="fa fa-wrench"></i></a>
-									<!-- <a href="form-dropzone.html#" class="btn-minimize"><i class="fa fa-chevron-up"></i></a> -->
-									<!-- <a href="form-dropzone.html#" class="btn-close"><i class="fa fa-times"></i></a> -->
-								</div>
+								<h2><i class="fa fa-cloud-upload"></i>Upload</h2>
 							</div>
 							<div class="box-content">
 								<div class="form-group">
-									<label class="control-label">File Upload</label>
 									<form class="box" method="post" action="" enctype="multipart/form-data">
         								<div id="drop-zone">
             								<div class="drop-zone-caption">Drag & Drop Files Here</div>
             								<span class="btn btn-primary btn-file" style="position: relative">
-                								<span style="font-weight: bold">Choose files</span>
-                								<span style="font-size: 75%"><br>Limit: 5MB</br></span>
+                								<i class="fa fa-file"></i>
+                									<span style="font-weight: bold">Choose files</span>
+                								<i class="fa fa-file"></i>
                 								<input type="file"id="drop-zone-file" name="files[]" multiple>
             								</span>
+            								<div class="drop-zone-caption" style="font-size: 15px">Max File Size: 5MB</div>
         								</div>
     								</form>
 								</div>
@@ -518,7 +514,35 @@
 	</div><!-- /.modal -->
 	<!-- end: Modal -->
 
-	
+	<!-- start: Upload Modal-->
+	<div class="modal fade" id="uploadModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" style="font-weight: bold">Upload Status</h4>
+				</div>
+
+				<div class="modal-body" id="filesUploadModalBody">
+					
+				</div>
+
+				<div class="modal-body" id="successUploadModalBody">
+					
+				</div>
+
+				<div class="modal-body" id="failUploadModalBody">
+
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+	<!-- end: Upload Modal -->
+
 	<div class="clearfix"></div>
 	<!-- start: Footer -->
 	<footer>
@@ -576,6 +600,7 @@
 		<script src="assets/js/core.min.js"></script>
 		
 		<!-- inline scripts related to this page -->
+		<script src="assets/js/common/utility.js"></script>
 		<script src="assets/js/pages/bacpac-upload.js"></script>
 	<!-- end: JavaScript-->
 </body>
