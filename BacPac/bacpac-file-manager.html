@@ -68,7 +68,7 @@
 			<div class="nav-no-collapse header-nav">
 				<ul class="nav navbar-nav pull-right">
 					<!-- start: Notifications Dropdown -->
-					<li class="dropdown hidden-xs">
+					<!-- <li class="dropdown hidden-xs">
 						<a class="btn dropdown-toggle" data-toggle="dropdown" href="bacpac.html#">
 							<i class="fa fa-warning"></i>
 						</a>
@@ -150,11 +150,11 @@
                         		<a>View all notifications</a>
 							</li>
 						</ul>
-					</li>
+					</li> -->
 					<!-- end: Notifications Dropdown -->
 
 					<!-- start: Tasks Dropdown -->
-					<li class="dropdown hidden-xs">
+					<!-- <li class="dropdown hidden-xs">
 						<a class="btn dropdown-toggle" data-toggle="dropdown" href="index.html#">
 							<i class="fa fa-tasks"></i>
 						</a>
@@ -211,11 +211,11 @@
                         		<a class="dropdown-menu-sub-footer">View all tasks</a>
 							</li>
 						</ul>
-					</li>
+					</li> -->
 					<!-- end: Tasks Dropdown -->
 
 					<!-- start: Message Dropdown -->
-					<li class="dropdown hidden-xs">
+					<!-- <li class="dropdown hidden-xs">
 						<a class="btn dropdown-toggle" data-toggle="dropdown" href="index.html#">
 							<i class="fa fa-envelope"></i>
 						</a>
@@ -307,11 +307,11 @@
                         		<a class="dropdown-menu-sub-footer">View all messages</a>
 							</li>
 						</ul>
-					</li>
+					</li> -->
 					<!-- end: Message Dropdown -->
 
 					<!-- start: Options Dropdown -->
-					<li class="dropdown hidden-xs">
+					<!-- <li class="dropdown hidden-xs">
 						<a class="btn dropdown-toggle" data-toggle="dropdown" href="bacpac.html#">
 							<i class="fa fa-wrench"></i>
 						</a>
@@ -329,13 +329,13 @@
 								<a href="#">Option3</a>
 							</li>
 						</ul>
-					</li>
+					</li> -->
 					<!-- end: Options Dropdown -->
 
 					<!-- start: User Dropdown -->
 					<li class="dropdown">
 						<a class="btn account dropdown-toggle" data-toggle="dropdown" href="bacpac.html#">
-							<div class="avatar"><img src="assets/img/avatar.jpg" alt="Avatar"></div>
+							<div class="avatar"><img id="profilePicture" src="" alt="Avatar"></div>
 
 							<!-- User Greeting -->
 							<div class="user">
@@ -347,7 +347,7 @@
 							<li class="dropdown-menu-title">
 
 							</li>
-							<li>
+							<!-- <li>
 								<a href="bacpac.html#">
 									<i class="fa fa-user"></i>
 									Profile
@@ -364,7 +364,7 @@
 									<i class="fa fa-envelope"></i>
 									Messages
 								</a>
-							</li>
+							</li> -->
 							<li>
 								<a id="logoutBtn" href="index.html">
 									<i class="fa fa-off"></i>
@@ -418,30 +418,6 @@
 							</a>
 						</li>
 
-						<!-- Tab 4: Sharing Status -->
-						<li>
-							<a class="bacpacTab" href="bacpac-share-status.html">
-								<i class="fa fa-bar-chart-o"></i>
-								<span class="hidden-sm"> Share Status</span>
-							</a>
-						</li>
-
-						<!-- Tab 5: Recent -->
-						<li>
-							<a class="bacpacTab" href="bacpac-recent.html">
-								<i class="fa fa-exclamation"></i>
-								<span class="hidden-sm"> Recent</span>
-							</a>
-						</li>
-
-						<!-- Tab 6: Trash -->
-						<li>
-							<a class="bacpacTab" href="bacpac-trash.html">
-								<i class="fa fa-trash-o"></i>
-								<span class="hidden-sm"> Trash</span>
-							</a>
-						</li>
-
 						<!-- Tab N: Some Application -->
 						<!-- <li>
 							<a href="">
@@ -462,6 +438,7 @@
 							<div class="box-header">
 								<h2><i class="fa fa-picture-o"></i> File Manager</h2>
 								<div class="box-icon">
+									<span style="float:center; padding-left: 10px; padding-right: 10px;">15GB max</span>
 									<a href="bacpac-file-manager.html#" class="fileOptionButton" id="optionsButton"><i class="fa fa-plus"></i></a>
 									<div id="fileOptionsMenu" class="hidden">
 										<button id="addFolder" class="btn btn-success" type="button">
@@ -485,15 +462,6 @@
 								<!-- start: File Manager -->
 								<div id="fileManager" class="container-fluid">
 									<div class="row">
-										<!-- <div id="fileManagerFoldersPane" class="col-md-3 well box-content clearfix list-group"> -->
-										<!--<div class="col-md-3 container-fluid">-->
-											<!--<div class="row panel panel-info">-->
-												<!--<div class="panel-header"><span class="label label-info" style="display:block">Navigator</span></div>-->
-												<!--<div id="fileManagerFoldersPane" class="panel-body">-->
-<!---->
-												<!--</div>-->
-											<!--</div>-->
-										<!--</div>-->
 										<div class=" container-fluid">
 											<div id="fileManagerContent" class="row well" style="overflow: scroll">
 
@@ -503,6 +471,21 @@
 								</div>
 								<!-- end: File Manager -->
 
+							</div>
+						</div>
+
+						<div class="box">
+							<div class="box-header">
+								<h2><i class="fa fa-share"></i> Shared With You</h2>
+							</div>
+							<div class="box-content clearfix">
+								<div class="container-fluid">
+									<div class="row">
+										<div id='sharedFileContent'>
+											
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div><!--/col-->

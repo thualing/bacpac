@@ -97,6 +97,9 @@ $(document).on("keydown", function(event){
 		/* Init the user's front end file manager */
 		listDirectoryContent(user.data.uid, "/", database, updateFolderPane);
 
+		/* Init the listenere for the user's share files display */
+		listFilesSharedWithMe(user.data.uid, "sharedFileContent", database);
+
 		/* Apply proper logout protocol to the logout button */
 		setupLogoutProtocol("logoutBtn", database, auth);
 
@@ -136,6 +139,7 @@ $(document).on("keydown", function(event){
 		var currentDirectoryLedger = Object.keys(data);	// a string array of the files/folders in the current directory
 		// console.log("obj: " + currentDirectoryLedger[1]);	// debug
 
+		// Update the folder/file content pane
 		for(var i = 0; i < currentDirectoryLedger.length; i++) {
 			// console.log("length: " + currentDirectoryLedger.length);	// debug
 			switch(currentDirectoryLedger[i]) {
@@ -166,21 +170,17 @@ $(document).on("keydown", function(event){
 												<span id='" + elementID + "filename' style='display: block; word-wrap: break-word; width: inherit; font-size: medium'>" + fileName + "</span>\
 												<div id='" + elementID + "OptionMenu' class='fileOptionMenu container-fluid hidden'>\
 													<div class='row'>\
-														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick='promptDownloadFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Open/Download</button>\
-														<button class='fileOptionMenuBtn btn btn-block btn-info' onclick='promptShareFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Sharing</button>\
-														<button class='fileOptionMenuBtn btn btn-block btn-default' onclick='promptPropertiesFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Properties</button>\
-														<button class='fileOptionMenuBtn btn btn-block btn-warning' onclick='promptMoveFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Move</button>\
-														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick='promptDeleteFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'>Delete</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick='promptDownloadFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'><span class='fa fa-arrow-circle-down'></span>Open/Download</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-info' onclick='promptShareFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'><span class='fa fa-share-square-o'></span>Sharing</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-default' onclick='promptPropertiesFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'><span class='fa fa-info'></span>Properties</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-warning' onclick='promptMoveFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'><span class='fa fa-level-up'></span>Move</button>\
+														<button class='fileOptionMenuBtn btn btn-block btn-danger' onclick='promptDeleteFromElement(" + '"' + elementID + '",' + '"' + uid + '"' + ")'><span class='fa fa-times-circle'></span>Delete</button>\
 													</div>\
 												</div>\
 											</div>\
 										</div>\
 									</div>\
 								</div>";
-								
-
-								// Collapsible Option Menu
-								/*fileElements += "<div class='col-md-12' style='text-align: left'>    <div id='" + elementID + "' class='fileElement' style='text-align: inherit'>    <a href='#" + elementDropdownID + "' role='button' class='thumbnail btn btn-info row' data-toggle='collapse' aria-expanded='false' aria-controls='" + elementDropdownID + "'>    <span class='glyphicon glyphicon-file' style='font-size: xx-large'></span>" + fileName + "</a>    <div class='collapse' id='" + elementDropdownID + "'>    <ul class='well'>    <li><button href='#'>Download</button></li>    <li><button href='#'>Properties</button></li>    <li><button>Delete</button></li>    </ul>    </div>    </div>    </div>";*/
 
 								counter++;
 								break;
@@ -371,29 +371,28 @@ $(document).on("keydown", function(event){
 				var resultHTML = "";
 				var matchCount = 0;
 
+				// Clear the sharing Modal Search Display
+				var noUsersFound = "<p style='color:white; font-style:oblique;'>No Users Found</p>";
+				insertIntoElement("sharingModalUserDisplay", noUsersFound);		// if no matches are found, this will be all that remains in the box
+
 				// Sift through the usernames for partial/complete matches to searchTerm and place partial/complete matches into the user display
 				usernames.forEach(function(uname, unameIndex, returnedArray){
+					if(!uname.includes("@")){	// since roster now includes a list of uids:emails in conjunction with emails:uids, ignore the former, and count the latter
+						// use the "@" to distinguish between email:uid pairs and uid:email pairs. If a uid:email pair is encountered, do nothing...
+						console.log(uname + " is not an email!");
+						return;
+					}
+					console.log(uname + " is an email!");
+
 					if (uname.includes(searchTerm)) {	// if there's a match, place it in the UI in the following button template:
 						matchCount++;
+
+						if (!matchCount) insertIntoElement("sharingModalUserDisplay", "");
+
 						resultHTML += "\
 						<button class='btn btn-info' style='width:100%' onclick='addUserToShare(" + '"' + elemID + '",' + '"' + userID + '",' + '"' + decodeURIComponent(uname) + '",' + '"' + snapshot.val()[uname]["uid"] + '"' + ")'>\
 							" + decodeURIComponent(uname) + "\
 						</button>";
-					}
-
-					// if this is the last element in the username array, output resultHTML to the UI
-					if (unameIndex === returnedArray.length - 1) {
-						switch(resultHTML){	// if no matches were found
-							case "": {
-								console.log("User not found...");
-								resultHTML = "<p style='color:white; font-style:oblique;'>No Users Found</p>";
-								break;
-							}
-							default: {
-								console.log("There are " + matchCount + " matches");
-								break;
-							}
-						}
 						insertIntoElement("sharingModalUserDisplay", resultHTML);
 					}
 				});
@@ -888,6 +887,23 @@ $(document).on("keydown", function(event){
 		return true;
 	}
 
+/* File Manager Utility: appendIntoElement
+		Description:
+			Appends html content to the end of the content currently in the specified element
+			A call to this function will PRESERVE any html within the specified element before appending
+		Expects:
+			?
+		Parameters:
+			string elemID - the id of the element to append into
+			string htmlObj - the html object to append
+		Returns:
+			?
+*/
+	function appendIntoElement(elemID, htmlObj) {
+		var oldHtml = $("#" + elemID).html();
+		insertIntoElement(elemID, oldHtml + htmlObj);
+	}
+
 /* Utility: insertIntoElement
 		Description:
 			Inserts html into the specified element as a child element.
@@ -982,6 +998,95 @@ $(document).on("keydown", function(event){
 		return true;
 	}
 
+/* File Manager Utility: listFilesSharedWithMe
+		Description:
+			Lists all files shared to the user by others
+		Expects:
+			This function is exepected to be called ONLY once
+		Parameters:
+			string userID - the current user's uid
+			string shareAreaID - the id of the element that will house all shared files
+			FirebaseObject dbRef - the firebase.database() object
+		Returns:
+			?
+*/
+	function listFilesSharedWithMe(userID, shareAreaID, dbRef) {
+		// Continuously listen to your database and acquire the full list of files that are shared with the current user at the given moment...
+		dbRef.ref("/shared/" + userID + "/fromOtherUsers/").on("value", function (snapshot) {
+			var counter = 0;
+			var filesFromOthers = snapshot.val();
+			var uidKeysArray = Object.keys(filesFromOthers);
+			// console.log(JSON.stringify(snapshot.val()));	// debug
+
+			if (uidKeysArray.length <= 1 && uidKeysArray["0"]) {
+				console.log("Alert:listFilesSharedWithMe: No files were shared with you...");
+				return;
+			} else {
+				// console.log(uidKeysArray);	// debug
+
+				// Clear the "shared with me" folders area
+				insertIntoElement(shareAreaID, "");
+
+				// Add an element into the "shared with me" folders area
+				uidKeysArray.forEach(function (currentKey, currentIndex, returnedArray) {
+					switch(currentKey) {
+						case "0": {
+							console.log("Alert:listFilesSharedWithMe: Skipping the initializer entry...");
+							break;
+						}
+						default: {
+							// console.log("Files shared by: " + currentKey);	// debug
+							var sharerUid = currentKey;
+							var filesSharedFromOtherUser = filesFromOthers[currentKey];
+							var keysOfFilesSharedFromOtherUser = Object.keys(filesSharedFromOtherUser);
+							// console.log("Files shared by '" + currentKey + "': " + JSON.stringify(filesSharedFromOtherUser));	// debug
+
+							// For each key, append a file element with download information and sharerUid information
+							keysOfFilesSharedFromOtherUser.forEach(function (currentFileKey, currentFileKeyIndex, returnedFileKeyArray) {
+								var fileName = bacpacDecode(currentFileKey);
+								var elementID = "sharedFile" + counter;
+								counter++;
+								console.log("Alert:listFilesSharedWithMe: Appending file '" + fileName + "' shared by '" + sharerUid + "'");	// debug
+
+								dbRef.ref("/roster/" + sharerUid).once("value").then(function (snapshot) {
+									var sharerEmail = bacpacDecode(snapshot.val().email);
+
+									var fileToAdd = "\
+									<div class='col-xs-6 col-md-3' style='padding-top: 10px'>\
+										<div id='" + elementID + "' class='fileElement' title='Click For File Options'>\
+											<div role='button' class='thumbnail'>\
+												<div onclick='optionMenu(" + '"' + elementID + '"' + ")'>\
+													<div class='container-fluid'>\
+														<div class='row'>\
+															<span class='label label-info' style='float:right; display: block;'>" + sharerEmail + "</span>\
+															<span class='glyphicon glyphicon-file' style='font-size: large;display: block; word-wrap: break-word; width: inherit'></span>\
+														</div>\
+													</div>\
+													<span id='" + elementID + "filename' style='display: block; word-wrap: break-word; width: inherit; font-size: medium'>" + fileName + "</span>\
+													<div id='" + elementID + "OptionMenu' class='fileOptionMenu container-fluid hidden'>\
+														<div class='row'>\
+															<button class='fileOptionMenuBtn btn btn-block btn-primary' onclick='promptDownloadFromElement(" + '"' + elementID + '",' + '"' + sharerUid + '"' + ")'><span class='fa fa-arrow-circle-down'></span>Open/Download</button>\
+															<button class='fileOptionMenuBtn btn btn-block btn-default' onclick='promptPropertiesFromElement(" + '"' + elementID + '",' + '"' + sharerUid + '"' + ")'><span class='fa fa-info'></span>Properties</button>\
+														</div>\
+													</div>\
+												</div>\
+											</div>\
+										</div>\
+									</div>";
+									appendIntoElement(shareAreaID, fileToAdd);
+								}).catch(function (error) {
+									console.log("Error:listFilesSharedWithMe: Internal Error Occurred! [" + error.code + " (" + error.message +")]");
+									return;
+								});
+							});
+							break;
+						}
+					}
+				});
+			}
+		});
+	}
+
 /* File Manager Utility: rsdCallback
 		Description:
 			The callback to run after reading Session Data
@@ -1016,6 +1121,8 @@ $(document).on("keydown", function(event){
 			}
 			default: {
 				// all clear; login is valid
+				console.log("photoURL: " + data.photoURL);
+				$("#profilePicture").attr("src", data.photoURL);
 				applyProfileData("profileUsername", data.email);
 				main();		// run page
 				return true;

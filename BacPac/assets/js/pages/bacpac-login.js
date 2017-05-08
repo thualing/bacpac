@@ -228,6 +228,11 @@ Don't use strict mode; there are possible browser compatilibity issues
 		// Safety check
 		if (!user) return false;
 
+		// Init user's profile pic to a standard profile pic
+		user.updateProfile({
+			photoURL: "https://firebasestorage.googleapis.com/v0/b/banpac-4d0af.appspot.com/o/common%2FBacPac_32x32.png?alt=media&token=31617028-5c78-49fb-8b37-bcaf35cf1217"
+		});
+
 		// Setup the initialization directories
 		var initRefs = {};
 		initRefs["fileAttribute/" + user.uid] = {		// init user's fileAttribute tracker
@@ -261,6 +266,9 @@ Don't use strict mode; there are possible browser compatilibity issues
 		}
 		initRefs["roster/" + bacpacEncode(user.email)] = {	// init user's roster entry
 			uid: user.uid
+		};
+		initRefs["roster/" + user.uid] = {	// init user's reversed roster entry
+			email: bacpacEncode(user.email)
 		};
 		initRefs["shared/" + user.uid] = {		// init user's shared with me folder
 			fromOtherUsers: {
